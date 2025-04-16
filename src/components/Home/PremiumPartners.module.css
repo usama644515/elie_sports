@@ -1,0 +1,174 @@
+/* PremiumPartners.module.css */
+.premiumPartners {
+    background-color: #ffffff;
+    padding: 80px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .contentWrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+  }
+  
+  .header {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+  
+  .title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    position: relative;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  
+  .title::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #ff7e5f 0%, #feb47b 100%);
+    border-radius: 2px;
+  }
+  
+  .subtitle {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #666;
+    max-width: 800px;
+    margin: 0 auto 30px;
+  }
+  
+  .divider {
+    height: 1px;
+    width: 100px;
+    background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0) 100%);
+    margin: 40px auto;
+  }
+  
+  .partnersGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 30px;
+    align-items: center;
+  }
+  
+  .partnerCard {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+  }
+  
+  .partnerCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .logoContainer {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .logoImage {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: grayscale(100%) contrast(0.8);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+  }
+  
+  .partnerCard:hover .logoImage {
+    filter: grayscale(0%) contrast(1);
+    opacity: 1;
+  }
+  
+  .partnerName {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    margin-top: 10px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+  }
+  
+  .partnerCard:hover .partnerName {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .partnersGrid {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 25px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .premiumPartners {
+      padding: 60px 20px;
+    }
+    
+    .title {
+      font-size: 2rem;
+    }
+    
+    .subtitle {
+      font-size: 1rem;
+    }
+    
+    .partnersGrid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+    }
+    
+    .logoContainer {
+      height: 70px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .premiumPartners {
+      padding: 50px 15px;
+    }
+    
+    .title {
+      font-size: 1.8rem;
+    }
+    
+    .partnersGrid {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 15px;
+    }
+    
+    .partnerCard {
+      padding: 20px 15px;
+    }
+    
+    .logoContainer {
+      height: 60px;
+    }
+  }

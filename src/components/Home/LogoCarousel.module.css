@@ -1,39 +1,51 @@
 .logoCarousel {
-    margin-top: 20px;
-    width: 100%;
-    overflow: hidden;
-    background-color: #f8f8f8; /* Background color of the section */
+  margin-top: 20px;
+  width: 100%;
+  overflow: hidden;
+  background-color: #f8f8f8; /* Background color of the section */
+}
+
+.carouselWrapper {
+  display: flex;
+  animation: scrollLeft 30s linear infinite;
+}
+
+.carouselWrapper:hover {
+  animation-play-state: paused;
+}
+
+.logoItem {
+  flex-shrink: 0;
+  margin-right: 30px; /* Space between logos */
+}
+
+.logoImageContainer {
+  filter: grayscale(100%);
+  transition: filter 0.3s ease;
+}
+
+.logoItem:hover .logoImageContainer {
+  filter: grayscale(0%);
+}
+
+/* Infinite scroll animation */
+@keyframes scrollLeft {
+  0% {
+    transform: translateX(0);
   }
-  
-  .carouselWrapper {
-    display: flex;
-    animation: scrollLeft 30s linear infinite;
+  100% {
+    transform: translateX(-100%);
   }
-  
+}
+
+@media (max-width: 768px) {
   .logoItem {
-    flex-shrink: 0;
-    margin-right: 30px; /* Space between logos */
+    margin-right: 20px; /* Adjust spacing on smaller screens */
   }
-  
-  /* Infinite scroll animation */
-  @keyframes scrollLeft {
-    0% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(-100%);
-    }
+}
+
+@media (max-width: 480px) {
+  .logoItem {
+    margin-right: 15px; /* Further reduce spacing on very small screens */
   }
-  
-  @media (max-width: 768px) {
-    .logoItem {
-      margin-right: 20px; /* Adjust spacing on smaller screens */
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .logoItem {
-      margin-right: 15px; /* Further reduce spacing on very small screens */
-    }
-  }
-  
+}

@@ -1,124 +1,158 @@
-
-
 /* Hero Section */
 .hero {
-    background-color: #f8f8f8;
-    padding: 60px 20px;
-    background-size: cover;
-    background-position: center;
-    height: 600px; /* Adjusted height */
-    display: flex;
-    /* justify-content: center; */
-    align-items: center;
-    position: relative;
-    transition: background-image 1s ease-in-out;
-  }
-  
-  .heroContent {
-    max-width: 600px;
-    /* text-align: center; */
-    color: #fff;
-    z-index: 10;
-    margin-left: 100px;
-  }
-  
-  .hero h1 {
-    font-size: 48px;
-    font-weight: 800;
-    margin-bottom: 20px;
-    text-transform: uppercase;
-  }
-  
-  .hero p {
-    font-size: 18px;
-    line-height: 1.6;
-    margin-bottom: 30px;
-  }
-  
-  .ctaButton {
-    background-color: #1F6DAD;
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .ctaButton:hover {
-    background-color: #0a3c65;
-  }
-  
-  /* Sports Grid Section */
-  .sportsGrid {
-    padding: 60px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  .sportsGrid h2 {
+  background-color: #f8f8f8;
+  padding: 60px 0 0 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1;
+}
+
+.heroContainer {
+  display: flex;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  position: relative;
+  z-index: 2;
+  gap: 40px;
+}
+
+.heroContent {
+  max-width: 500px;
+  color: #fff;
+  padding: 30px 0;
+  margin-bottom: -20px;
+}
+
+.slideshow {
+  width: 700px;
+  height: 500px;
+  position: relative;
+  overflow: hidden;
+  /* border-radius: 8px; */
+  /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); */
+  align-self: flex-end;
+}
+
+.slideshowImage {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.slideshowImage.active {
+  opacity: 1;
+}
+
+.hero h1 {
+  font-size: 48px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.hero p {
+  font-size: 18px;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.ctaButton {
+  background-color: #1F6DAD;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.ctaButton:hover {
+  background-color: #0a3c65;
+}
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .heroContainer {
+    flex-direction: column;
     text-align: center;
-    font-size: 32px;
-    margin-bottom: 40px;
-    color: #333;
-  }
-  
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    align-items: center;
     gap: 20px;
   }
   
-  .sportItem {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 80px;
-    background-color: #f8f8f8;
-    color: #333;
-    text-decoration: none;
-    font-weight: 600;
-    border-radius: 4px;
-    transition: all 0.3s;
+  .heroContent {
+    max-width: 100%;
+    margin-bottom: 0;
+    padding: 30px 20px;
     text-align: center;
-    padding: 0 15px;
   }
   
-  .sportItem:hover {
-    background-color: #1F6DAD;
-    color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  .slideshow {
+    width: 100%;
+    max-width: 500px;
+    height: 400px;
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 40px 0 0 0;
+    min-height: auto;
   }
   
-  @media (max-width: 768px) {
-    .hero {
-      padding: 40px 20px;
-      height: 400px;  /* Reduced height for smaller screens */
-    }
-  
-    .hero h1 {
-      font-size: 36px;
-    }
-  
-    .hero p {
-      font-size: 16px;
-    }
-  
-    .ctaButton {
-      padding: 12px 24px;
-      font-size: 14px;
-    }
-  
-    .grid {
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    }
-  
-    .sportItem {
-      height: 60px;
-      font-size: 14px;
-    }
+  .hero h1 {
+    font-size: 36px;
   }
   
+  .hero p {
+    font-size: 16px;
+  }
+  
+  .ctaButton {
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+  
+  .slideshow {
+    height: 350px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero h1 {
+    font-size: 28px;
+  }
+  
+  .slideshow {
+    height: 250px;
+  }
+
+  .heroContent {
+    padding: 20px 15px;
+  }
+}

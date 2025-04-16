@@ -1,12 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState } from "react";
-import { FaBars, FaChevronDown, FaChevronRight } from "react-icons/fa";
+import { FaBars, FaChevronDown, FaChevronRight, FaUser, FaSearch, FaShoppingCart } from "react-icons/fa";
 import styles from "./Header.module.css";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeSubDropdown, setActiveSubDropdown] = useState(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -21,6 +23,16 @@ const Header = () => {
     setActiveSubDropdown(
       activeSubDropdown === subDropdown ? null : subDropdown
     );
+  };
+
+  const toggleSearch = () => {
+    setSearchOpen(!searchOpen);
+    if (!searchOpen) {
+      // Focus the input when opening
+      setTimeout(() => {
+        document.getElementById("searchInput")?.focus();
+      }, 0);
+    }
   };
 
   return (
@@ -57,7 +69,7 @@ const Header = () => {
               }}
             >
               <a href="#" onClick={() => toggleDropdown("categories")}>
-                Categories <FaChevronDown className={styles.dropdownIcon} />
+                <span className={styles.menuText}>Categories</span> <FaChevronDown className={styles.dropdownIcon} />
               </a>
               <div
                 className={`${styles.dropdown} ${
@@ -78,7 +90,7 @@ const Header = () => {
                         }}
                       >
                         <a href="#">
-                          Basketball{" "}
+                          <span className={styles.menuText}>Basketball</span>
                           <FaChevronRight className={styles.submenuIcon} />
                         </a>
                         {/* Second Level Submenu */}
@@ -94,34 +106,34 @@ const Header = () => {
                               <h5>Basketball</h5>
                               <ul>
                                 <li>
-                                  <a href="#">Packages</a>
+                                  <a href="#"><span className={styles.menuText}>Packages</span></a>
                                 </li>
                                 <li>
-                                  <a href="#">Jerseys</a>
+                                  <a href="#"><span className={styles.menuText}>Jerseys</span></a>
                                 </li>
                                 <li>
-                                  <a href="#">Shirts</a>
+                                  <a href="#"><span className={styles.menuText}>Shirts</span></a>
                                 </li>
                                 <li>
-                                  <a href="#">Jackets</a>
+                                  <a href="#"><span className={styles.menuText}>Jackets</span></a>
                                 </li>
                                 <li>
-                                  <a href="#">Shorts</a>
+                                  <a href="#"><span className={styles.menuText}>Shorts</span></a>
                                 </li>
                                 <li>
-                                  <a href="#">Pants</a>
+                                  <a href="#"><span className={styles.menuText}>Pants</span></a>
                                 </li>
                                 <li>
-                                  <a href="#">Socks</a>
+                                  <a href="#"><span className={styles.menuText}>Socks</span></a>
                                 </li>
                                 <li>
-                                  <a href="#">Bags</a>
+                                  <a href="#"><span className={styles.menuText}>Bags</span></a>
                                 </li>
                                 <li>
-                                  <a href="#">Reversible Jerseys</a>
+                                  <a href="#"><span className={styles.menuText}>Reversible Jerseys</span></a>
                                 </li>
                                 <li>
-                                  <a href="#">Reversible Shorts</a>
+                                  <a href="#"><span className={styles.menuText}>Reversible Shorts</span></a>
                                 </li>
                               </ul>
                             </div>
@@ -137,7 +149,7 @@ const Header = () => {
                         }}
                       >
                         <a href="#">
-                          Equipment{" "}
+                          <span className={styles.menuText}>Equipment</span>
                           <FaChevronRight className={styles.submenuIcon} />
                         </a>
                         {/* Second Level Submenu */}
@@ -153,19 +165,19 @@ const Header = () => {
                               <h5>Equipment</h5>
                               <ul>
                                 <li>
-                                  <a href="#">Headwear</a>
+                                  <a href="#"><span className={styles.menuText}>Headwear</span></a>
                                 </li>
                                 <li>
-                                  <a href="#">Compression</a>
+                                  <a href="#"><span className={styles.menuText}>Compression</span></a>
                                 </li>
                                 <li>
-                                  <a href="#">Sizing Kits</a>
+                                  <a href="#"><span className={styles.menuText}>Sizing Kits</span></a>
                                 </li>
                                 <li>
-                                  <a href="#">Popular Basketball Designs</a>
+                                  <a href="#"><span className={styles.menuText}>Popular Basketball Designs</span></a>
                                 </li>
                                 <li>
-                                  <a href="#">Officials</a>
+                                  <a href="#"><span className={styles.menuText}>Officials</span></a>
                                 </li>
                               </ul>
                             </div>
@@ -173,43 +185,43 @@ const Header = () => {
                         </div>
                       </li>
                       <li>
-                        <a href="#">Baseball</a>
+                        <a href="#"><span className={styles.menuText}>Baseball</span></a>
                       </li>
                       <li>
-                        <a href="#">Football</a>
+                        <a href="#"><span className={styles.menuText}>Football</span></a>
                       </li>
                       <li>
-                        <a href="#">Soccer</a>
+                        <a href="#"><span className={styles.menuText}>Soccer</span></a>
                       </li>
                       <li>
-                        <a href="#">Compression</a>
+                        <a href="#"><span className={styles.menuText}>Compression</span></a>
                       </li>
                       <li>
-                        <a href="#">Track</a>
+                        <a href="#"><span className={styles.menuText}>Track</span></a>
                       </li>
                       <li>
-                        <a href="#">Flag Football (7v7)</a>
+                        <a href="#"><span className={styles.menuText}>Flag Football (7v7)</span></a>
                       </li>
                       <li>
-                        <a href="#">Softball</a>
+                        <a href="#"><span className={styles.menuText}>Softball</span></a>
                       </li>
                       <li>
-                        <a href="#">Bowling</a>
+                        <a href="#"><span className={styles.menuText}>Bowling</span></a>
                       </li>
                       <li>
-                        <a href="#">Cheer</a>
+                        <a href="#"><span className={styles.menuText}>Cheer</span></a>
                       </li>
                       <li>
-                        <a href="#">Volleyball</a>
+                        <a href="#"><span className={styles.menuText}>Volleyball</span></a>
                       </li>
                       <li>
-                        <a href="#">Hockey</a>
+                        <a href="#"><span className={styles.menuText}>Hockey</span></a>
                       </li>
                       <li>
-                        <a href="#">Bags</a>
+                        <a href="#"><span className={styles.menuText}>Bags</span></a>
                       </li>
                       <li>
-                        <a href="#">Custom Swag</a>
+                        <a href="#"><span className={styles.menuText}>Custom Swag</span></a>
                       </li>
                     </ul>
                   </div>
@@ -218,13 +230,13 @@ const Header = () => {
             </li>
 
             <li className={styles.navItem}>
-              <a href="#">Free Custom Designs</a>
+              <a href="#"><span className={styles.menuText}>Free Custom Designs</span></a>
             </li>
             <li className={styles.navItem}>
-              <a href="#">Sponsorships</a>
+              <a href="#"><span className={styles.menuText}>Sponsorships</span></a>
             </li>
             <li className={styles.navItem}>
-              <a href="#">Partner Program</a>
+              <a href="#"><span className={styles.menuText}>Partner Program</span></a>
             </li>
             {/* More Menu */}
             <li
@@ -238,7 +250,7 @@ const Header = () => {
               }}
             >
               <a href="#" onClick={() => toggleDropdown("more")}>
-                More <FaChevronDown className={styles.dropdownIcon} />
+                <span className={styles.menuText}>More</span> <FaChevronDown className={styles.dropdownIcon} />
               </a>
               <div
                 className={`${styles.dropdown} ${
@@ -249,16 +261,16 @@ const Header = () => {
                   <div className={styles.dropdownSection}>
                     <ul>
                       <li>
-                        <a href="#">About Us</a>
+                        <a href="#"><span className={styles.menuText}>About Us</span></a>
                       </li>
                       <li>
-                        <a href="#">Blog</a>
+                        <a href="#"><span className={styles.menuText}>Blog</span></a>
                       </li>
                       <li>
-                        <a href="#">Reviews</a>
+                        <a href="#"><span className={styles.menuText}>Reviews</span></a>
                       </li>
                       <li>
-                        <a href="#">FAQ</a>
+                        <a href="#"><span className={styles.menuText}>FAQ</span></a>
                       </li>
                     </ul>
                   </div>
@@ -269,39 +281,28 @@ const Header = () => {
         </nav>
 
         <div className={styles.navActions}>
-          <button className={styles.searchButton}>
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M19 19L13 13M15 8C15 11.866 11.866 15 8 15C4.13401 15 1 11.866 1 8C1 4.13401 4.13401 1 8 1C11.866 1 15 4.13401 15 8Z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+          <div className={`${styles.searchContainer} ${searchOpen ? styles.open : ''}`}>
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Search..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className={styles.searchInput}
+            />
+            <button className={styles.searchButton} onClick={toggleSearch}>
+              <FaSearch className={styles.searchIcon} />
+            </button>
+          </div>
+          <button className={styles.profileButton}>
+            <FaUser className={styles.profileIcon} />
           </button>
           <button className={styles.cartButton}>
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M6 16C4.9 16 4.01 16.9 4.01 18C4.01 19.1 4.9 20 6 20C7.1 20 8 19.1 8 18C8 16.9 7.1 16 6 16ZM0 0V2H2L5.6 9.59L4.25 12.04C4.09 12.32 4 12.65 4 13C4 14.1 4.9 15 6 15H18V13H6.42C6.28 13 6.17 12.89 6.17 12.75L6.2 12.63L7.1 11H14.55C15.3 11 15.96 10.59 16.3 9.97L19.88 3.48C19.96 3.34 20 3.17 20 3C20 2.45 19.55 2 19 2H4.21L3.27 0H0ZM16 16C14.9 16 14.01 16.9 14.01 18C14.01 19.1 14.9 20 16 20C17.1 20 18 19.1 18 18C18 16.9 17.1 16 16 16Z"
-                fill="currentColor"
-              />
-            </svg>
+            <FaShoppingCart className={styles.cartIcon} />
+            <span className={styles.cartBadge}>0</span>
           </button>
           <button className={styles.menuButton} onClick={toggleMenu}>
-            <FaBars size={24} />
+            <FaBars className={styles.menuIcon} />
           </button>
         </div>
       </div>
