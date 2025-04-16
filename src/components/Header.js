@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { FaBars, FaChevronDown, FaChevronRight, FaUser, FaSearch, FaShoppingCart } from "react-icons/fa";
 import styles from "./Header.module.css";
+import Link from "next/link";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -42,9 +43,9 @@ const Header = () => {
         <div className={styles.topBarContent}>
           <span>Need help? Call us at +1 (347) 850-2720</span>
           <div className={styles.topBarLinks}>
-            <a href="#">Help</a>
-            <a href="#">Contact Us</a>
-            <a href="#">Track Order</a>
+            <Link href="/help">Help</Link>
+            <Link href="/contact">Contact Us</Link>
+            <Link href="/track-order">Track Order</Link>
           </div>
         </div>
       </div>
@@ -52,7 +53,9 @@ const Header = () => {
       {/* Main Navigation */}
       <div className={styles.mainNav}>
         <div className={styles.logo}>
-          <img src="/images/logo.png" alt="Elie Sports" />
+          <Link href="/">
+            <img src="/images/logo.png" alt="Elie Sports" />
+          </Link>
         </div>
 
         <nav className={`${styles.nav} ${menuOpen ? styles.open : ""}`}>
@@ -89,10 +92,10 @@ const Header = () => {
                           }
                         }}
                       >
-                        <a href="#">
+                        <Link href="/products/basketball">
                           <span className={styles.menuText}>Basketball</span>
                           <FaChevronRight className={styles.submenuIcon} />
-                        </a>
+                        </Link>
                         {/* Second Level Submenu */}
                         <div
                           className={`${styles.subDropdown} ${
@@ -106,34 +109,34 @@ const Header = () => {
                               <h5>Basketball</h5>
                               <ul>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Packages</span></a>
+                                  <Link href="/products/basketball/packages"><span className={styles.menuText}>Packages</span></Link>
                                 </li>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Jerseys</span></a>
+                                  <Link href="/products/basketball/jerseys"><span className={styles.menuText}>Jerseys</span></Link>
                                 </li>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Shirts</span></a>
+                                  <Link href="/products/basketball/shirts"><span className={styles.menuText}>Shirts</span></Link>
                                 </li>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Jackets</span></a>
+                                  <Link href="/products/basketball/jackets"><span className={styles.menuText}>Jackets</span></Link>
                                 </li>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Shorts</span></a>
+                                  <Link href="/products/basketball/shorts"><span className={styles.menuText}>Shorts</span></Link>
                                 </li>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Pants</span></a>
+                                  <Link href="/products/basketball/pants"><span className={styles.menuText}>Pants</span></Link>
                                 </li>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Socks</span></a>
+                                  <Link href="/products/basketball/socks"><span className={styles.menuText}>Socks</span></Link>
                                 </li>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Bags</span></a>
+                                  <Link href="/products/basketball/bags"><span className={styles.menuText}>Bags</span></Link>
                                 </li>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Reversible Jerseys</span></a>
+                                  <Link href="/products/basketball/reversible-jerseys"><span className={styles.menuText}>Reversible Jerseys</span></Link>
                                 </li>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Reversible Shorts</span></a>
+                                  <Link href="/products/basketball/reversible-shorts"><span className={styles.menuText}>Reversible Shorts</span></Link>
                                 </li>
                               </ul>
                             </div>
@@ -148,10 +151,10 @@ const Header = () => {
                           }
                         }}
                       >
-                        <a href="#">
+                        <Link href="/products/equipment">
                           <span className={styles.menuText}>Equipment</span>
                           <FaChevronRight className={styles.submenuIcon} />
-                        </a>
+                        </Link>
                         {/* Second Level Submenu */}
                         <div
                           className={`${styles.subDropdown} ${
@@ -165,19 +168,19 @@ const Header = () => {
                               <h5>Equipment</h5>
                               <ul>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Headwear</span></a>
+                                  <Link href="/products/equipment/headwear"><span className={styles.menuText}>Headwear</span></Link>
                                 </li>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Compression</span></a>
+                                  <Link href="/products/equipment/compression"><span className={styles.menuText}>Compression</span></Link>
                                 </li>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Sizing Kits</span></a>
+                                  <Link href="/products/equipment/sizing-kits"><span className={styles.menuText}>Sizing Kits</span></Link>
                                 </li>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Popular Basketball Designs</span></a>
+                                  <Link href="/products/equipment/popular-basketball-designs"><span className={styles.menuText}>Popular Basketball Designs</span></Link>
                                 </li>
                                 <li>
-                                  <a href="#"><span className={styles.menuText}>Officials</span></a>
+                                  <Link href="/products/equipment/officials"><span className={styles.menuText}>Officials</span></Link>
                                 </li>
                               </ul>
                             </div>
@@ -185,43 +188,43 @@ const Header = () => {
                         </div>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Baseball</span></a>
+                        <Link href="/products/baseball"><span className={styles.menuText}>Baseball</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Football</span></a>
+                        <Link href="/products/football"><span className={styles.menuText}>Football</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Soccer</span></a>
+                        <Link href="/products/soccer"><span className={styles.menuText}>Soccer</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Compression</span></a>
+                        <Link href="/products/compression"><span className={styles.menuText}>Compression</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Track</span></a>
+                        <Link href="/products/track"><span className={styles.menuText}>Track</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Flag Football (7v7)</span></a>
+                        <Link href="/products/flag-football"><span className={styles.menuText}>Flag Football (7v7)</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Softball</span></a>
+                        <Link href="/products/softball"><span className={styles.menuText}>Softball</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Bowling</span></a>
+                        <Link href="/products/bowling"><span className={styles.menuText}>Bowling</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Cheer</span></a>
+                        <Link href="/products/cheer"><span className={styles.menuText}>Cheer</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Volleyball</span></a>
+                        <Link href="/products/volleyball"><span className={styles.menuText}>Volleyball</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Hockey</span></a>
+                        <Link href="/products/hockey"><span className={styles.menuText}>Hockey</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Bags</span></a>
+                        <Link href="/products/bags"><span className={styles.menuText}>Bags</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Custom Swag</span></a>
+                        <Link href="/products/custom-swag"><span className={styles.menuText}>Custom Swag</span></Link>
                       </li>
                     </ul>
                   </div>
@@ -230,13 +233,13 @@ const Header = () => {
             </li>
 
             <li className={styles.navItem}>
-              <a href="#"><span className={styles.menuText}>Free Custom Designs</span></a>
+              <Link href="/free-custom-designs"><span className={styles.menuText}>Free Custom Designs</span></Link>
             </li>
             <li className={styles.navItem}>
-              <a href="#"><span className={styles.menuText}>Sponsorships</span></a>
+              <Link href="/sponsorships"><span className={styles.menuText}>Sponsorships</span></Link>
             </li>
             <li className={styles.navItem}>
-              <a href="#"><span className={styles.menuText}>Partner Program</span></a>
+              <Link href="/partner-program"><span className={styles.menuText}>Partner Program</span></Link>
             </li>
             {/* More Menu */}
             <li
@@ -261,16 +264,16 @@ const Header = () => {
                   <div className={styles.dropdownSection}>
                     <ul>
                       <li>
-                        <a href="#"><span className={styles.menuText}>About Us</span></a>
+                        <Link href="/about-us"><span className={styles.menuText}>About Us</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Blog</span></a>
+                        <Link href="/blog"><span className={styles.menuText}>Blog</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>Reviews</span></a>
+                        <Link href="/reviews"><span className={styles.menuText}>Reviews</span></Link>
                       </li>
                       <li>
-                        <a href="#"><span className={styles.menuText}>FAQ</span></a>
+                        <Link href="/faq"><span className={styles.menuText}>FAQ</span></Link>
                       </li>
                     </ul>
                   </div>
@@ -295,11 +298,15 @@ const Header = () => {
             </button>
           </div>
           <button className={styles.profileButton}>
-            <FaUser className={styles.profileIcon} />
+            <Link href="/account">
+              <FaUser className={styles.profileIcon} />
+            </Link>
           </button>
           <button className={styles.cartButton}>
-            <FaShoppingCart className={styles.cartIcon} />
-            <span className={styles.cartBadge}>0</span>
+            <Link href="/cart">
+              <FaShoppingCart className={styles.cartIcon} />
+              <span className={styles.cartBadge}>0</span>
+            </Link>
           </button>
           <button className={styles.menuButton} onClick={toggleMenu}>
             <FaBars className={styles.menuIcon} />
