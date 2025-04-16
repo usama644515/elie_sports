@@ -1,0 +1,124 @@
+
+
+/* Hero Section */
+.hero {
+    background-color: #f8f8f8;
+    padding: 60px 20px;
+    background-size: cover;
+    background-position: center;
+    height: 600px; /* Adjusted height */
+    display: flex;
+    /* justify-content: center; */
+    align-items: center;
+    position: relative;
+    transition: background-image 1s ease-in-out;
+  }
+  
+  .heroContent {
+    max-width: 600px;
+    /* text-align: center; */
+    color: #fff;
+    z-index: 10;
+    margin-left: 100px;
+  }
+  
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  
+  .hero p {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+  }
+  
+  .ctaButton {
+    background-color: #1F6DAD;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .ctaButton:hover {
+    background-color: #0a3c65;
+  }
+  
+  /* Sports Grid Section */
+  .sportsGrid {
+    padding: 60px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .sportsGrid h2 {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 40px;
+    color: #333;
+  }
+  
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  
+  .sportItem {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80px;
+    background-color: #f8f8f8;
+    color: #333;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 4px;
+    transition: all 0.3s;
+    text-align: center;
+    padding: 0 15px;
+  }
+  
+  .sportItem:hover {
+    background-color: #1F6DAD;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    .hero {
+      padding: 40px 20px;
+      height: 400px;  /* Reduced height for smaller screens */
+    }
+  
+    .hero h1 {
+      font-size: 36px;
+    }
+  
+    .hero p {
+      font-size: 16px;
+    }
+  
+    .ctaButton {
+      padding: 12px 24px;
+      font-size: 14px;
+    }
+  
+    .grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+  
+    .sportItem {
+      height: 60px;
+      font-size: 14px;
+    }
+  }
+  
