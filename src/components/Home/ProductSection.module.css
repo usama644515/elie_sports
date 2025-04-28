@@ -184,3 +184,10 @@
     }
   }
   
+  .noProducts {
+    width: 100%;
+    text-align: center;
+    padding: 40px;
+    font-size: 18px;
+    color: #666;
+  }

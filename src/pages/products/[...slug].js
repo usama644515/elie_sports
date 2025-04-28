@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import Head from "next/head";
-import Header from "../../components/Header";
+import Header2 from "../../components/Header2";
 import Footer from "../../components/Footer";
 import Sidebar from "../../components/Product/Sidebar";
 import ProductGrid from "../../components/Product/ProductGrid";
@@ -76,7 +76,7 @@ const CategoryPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Header />
+      <Header2 />
 
       <main>
         <div style={{ display: 'flex', gap: '20px' }}>

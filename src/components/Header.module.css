@@ -7,7 +7,7 @@
 .topBar {
   background-color: #1F6DAD;
   padding: 8px 0;
-  border-bottom: 1px solid #e7e7e7;
+  /* border-bottom: 1px solid #e7e7e7; */
 }
 
 .topBarContent {
@@ -39,8 +39,14 @@
   margin: 0 auto;
   padding: 15px 20px;
   position: relative;
-  background-color: white;
+  background-image: url('/images/banner.jpeg');
+  background-size: cover; /* Ensures the image covers the full container */
+  background-position: center; /* Centers the background image */
+  border-bottom: 0.5px solid white; /* Adds a white border at the bottom */
 }
+
+
+
 
 .logo img {
   width: 160px;
@@ -68,7 +74,7 @@
 .navItem a {
   display: flex;
   align-items: center;
-  color: #333;
+  color: white;
   text-decoration: none;
   font-weight: 600;
   font-size: 16px;
@@ -274,7 +280,7 @@
   border: none;
   cursor: pointer;
   padding: 8px;
-  color: #333;
+  color: white;
   z-index: 1;
 }
 
