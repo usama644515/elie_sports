@@ -619,3 +619,145 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Add these to your existing CSS */
+
+.cartMessage {
+  padding: 0.8rem;
+  background-color: rgba(31, 109, 173, 0.1);
+  border-radius: 8px;
+  color: var(--primary-color);
+  text-align: center;
+  margin-bottom: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.customizeButton {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  background-color: var(--accent-color);
+  color: var(--dark-color);
+}
+
+.customizeButton:hover {
+  background-color: #ffc233;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 209, 102, 0.2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Add these to your existing CSS */
+
+.quoteButton {
+  flex: 1;
+  padding: 1rem;
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  background-color: transparent;
+  color: var(--primary-color);
+  margin-top: 1rem;
+}
+
+.quoteButton:hover {
+  background-color: rgba(31, 109, 173, 0.1);
+  transform: translateY(-2px);
+}
+
+.quoteForm {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background-color: rgba(248, 249, 250, 0.8);
+  border-radius: 8px;
+  border: 1px solid var(--light-gray);
+}
+
+.quoteForm h3 {
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  font-size: 1.2rem;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--dark-color);
+  font-weight: 500;
+}
+
+.formGroup input,
+.formGroup textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--light-gray);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: var(--transition);
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(31, 109, 173, 0.2);
+}
+
+.formGroup textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 1rem;
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.submitButton:hover {
+  background-color: #1a5d95;
+  transform: translateY(-2px);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: var(--primary-color);
+}
+
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: var(--secondary-color);
+}

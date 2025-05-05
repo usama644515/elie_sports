@@ -419,3 +419,11 @@
     min-width: 100%;
   }
 }
+
+.noProducts {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #666;
+}

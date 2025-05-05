@@ -1,8 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
-import { useState } from "react";
-import { FaBars, FaChevronDown, FaChevronRight, FaUser, FaSearch, FaShoppingCart } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { FaBars, FaChevronDown, FaChevronRight, FaUser, FaSearch, FaShoppingCart, FaSignOutAlt } from "react-icons/fa";
+import { FiUser, FiShoppingCart, FiSearch, FiSettings, FiHeart } from "react-icons/fi";
 import styles from "./Header2.module.css";
 import Link from "next/link";
+import LoginModal from "./Modal/LoginModal";
+import { auth } from "../lib/firebase";
+import { signOut } from "firebase/auth";
 
 const Header2 = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -10,6 +14,30 @@ const Header2 = () => {
   const [activeSubDropdown, setActiveSubDropdown] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      unsubscribe();
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -29,15 +57,37 @@ const Header2 = () => {
   const toggleSearch = () => {
     setSearchOpen(!searchOpen);
     if (!searchOpen) {
-      // Focus the input when opening
       setTimeout(() => {
         document.getElementById("searchInput")?.focus();
       }, 0);
     }
   };
 
+  const toggleProfileDropdown = () => {
+    setProfileDropdownOpen(!profileDropdownOpen);
+  };
+
+  const openLoginModal = () => {
+    setIsLoginModalOpen(true);
+  };
+
+  const closeLoginModal = () => {
+    setIsLoginModalOpen(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setProfileDropdownOpen(false);
+      alert('You have been logged out successfully.');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      alert('Error signing out. Please try again.');
+    }
+  };
+
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
       {/* Top Bar */}
       <div className={styles.topBar}>
         <div className={styles.topBarContent}>
@@ -241,6 +291,9 @@ const Header2 = () => {
             <li className={styles.navItem}>
               <Link href="/partner-program"><span className={styles.menuText}>Partner Program</span></Link>
             </li>
+            <li className={styles.navItem}>
+              <Link href="/contact"><span className={styles.menuText}>Contact</span></Link>
+            </li>
             {/* More Menu */}
             <li
               className={styles.navItem}
@@ -294,18 +347,66 @@ const Header2 = () => {
               className={styles.searchInput}
             />
             <button className={styles.searchButton} onClick={toggleSearch}>
-              <FaSearch className={styles.searchIcon} />
+              <FiSearch className={styles.searchIcon} />
             </button>
           </div>
-          <button className={styles.profileButton}>
-            <Link href="/account">
-              <FaUser className={styles.profileIcon} />
-            </Link>
-          </button>
+          {user ? (
+            <div className={styles.profileContainer}>
+              <button 
+                className={styles.profileButton} 
+                onClick={toggleProfileDropdown}
+                aria-label="User profile"
+              >
+                <FiUser className={styles.profileIcon} />
+                <span className={styles.userName}>{user.displayName || 'Account'}</span>
+              </button>
+              {profileDropdownOpen && (
+                <div className={styles.profileDropdown}>
+                  <div className={styles.profileDropdownHeader}>
+                    <div className={styles.profileInitial}>
+                      {user.displayName?.charAt(0) || 'A'}
+                    </div>
+                    <div className={styles.profileInfo}>
+                      <div className={styles.profileName}>{user.displayName || 'Account'}</div>
+                      <div className={styles.profileEmail}>{user.email}</div>
+                    </div>
+                  </div>
+                  <div className={styles.profileDropdownMenu}>
+                    <Link href="/profile" className={styles.dropdownItem} onClick={() => setProfileDropdownOpen(false)}>
+                      <FiUser className={styles.dropdownIcon} />
+                      <span>My Profile</span>
+                    </Link>
+                    <Link href="/myorders" className={styles.dropdownItem} onClick={() => setProfileDropdownOpen(false)}>
+                      <FiShoppingCart className={styles.dropdownIcon} />
+                      <span>My Orders</span>
+                    </Link>
+                    <Link href="/account/wishlist" className={styles.dropdownItem} onClick={() => setProfileDropdownOpen(false)}>
+                      <FiHeart className={styles.dropdownIcon} />
+                      <span>Wishlist</span>
+                    </Link>
+                    <Link href="/account/settings" className={styles.dropdownItem} onClick={() => setProfileDropdownOpen(false)}>
+                      <FiSettings className={styles.dropdownIcon} />
+                      <span>Settings</span>
+                    </Link>
+                    <button className={styles.dropdownItem} onClick={handleLogout}>
+                      <FaSignOutAlt className={styles.dropdownIcon} />
+                      <span>Log Out</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button className={styles.loginButton} onClick={openLoginModal}>
+              Sign In
+            </button>
+          )}
           <button className={styles.cartButton}>
             <Link href="/cart">
-              <FaShoppingCart className={styles.cartIcon} />
-              <span className={styles.cartBadge}>0</span>
+              <div className={styles.cartIconContainer}>
+                <FiShoppingCart className={styles.cartIcon} />
+                {/* <span className={styles.cartBadge}>0</span> */}
+              </div>
             </Link>
           </button>
           <button className={styles.menuButton} onClick={toggleMenu}>
@@ -313,6 +414,8 @@ const Header2 = () => {
           </button>
         </div>
       </div>
+
+      <LoginModal isOpen={isLoginModalOpen} onRequestClose={closeLoginModal} />
     </header>
   );
 };

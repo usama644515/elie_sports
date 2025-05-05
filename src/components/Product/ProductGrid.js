@@ -127,109 +127,117 @@ const ProductGrid = ({ products }) => {
 
       {/* Product Grid */}
       <div className={styles.productGrid}>
-        {currentItems.map((product) => (
-          <div 
-            key={product.id} 
-            className={styles.productCard}
-            onMouseEnter={() => setIsHovered(product.id)}
-            onMouseLeave={() => setIsHovered(null)}
-          >
-            <div className={styles.imageContainer}>
-              <img 
-                src={product.image} 
-                alt={product.name} 
-                className={`${styles.productImage} ${isHovered === product.id ? styles.zoomed : ''}`}
-              />
-              
-              {/* Product badges */}
-              <div className={styles.badgeContainer}>
-                {product.isNew && <span className={styles.newBadge}>New</span>}
-                {product.discount && <span className={styles.discountBadge}>-{product.discount}%</span>}
-              </div>
-              
-              {/* Favorite button */}
-              <button 
-                className={`${styles.favoriteButton} ${favorites.includes(product.id) ? styles.favorited : ''}`}
-                onClick={(e) => toggleFavorite(product.id, e)}
-              >
-                <FiHeart />
-              </button>
-              
-              {/* Quick actions */}
-              <div className={`${styles.quickActions} ${isHovered === product.id ? styles.visible : ''}`}>
-                <button className={styles.quickActionButton}>
-                  <FiShoppingCart />
+        {currentItems.length > 0 ? (
+          currentItems.map((product) => (
+            <div 
+              key={product.id} 
+              className={styles.productCard}
+              onMouseEnter={() => setIsHovered(product.id)}
+              onMouseLeave={() => setIsHovered(null)}
+            >
+              <div className={styles.imageContainer}>
+                <img 
+                  src={product.image} 
+                  alt={product.name} 
+                  className={`${styles.productImage} ${isHovered === product.id ? styles.zoomed : ''}`}
+                />
+                
+                {/* Product badges */}
+                <div className={styles.badgeContainer}>
+                  {product.isNew && <span className={styles.newBadge}>New</span>}
+                  {product.discount && <span className={styles.discountBadge}>-{product.discount}%</span>}
+                </div>
+                
+                {/* Favorite button */}
+                <button 
+                  className={`${styles.favoriteButton} ${favorites.includes(product.id) ? styles.favorited : ''}`}
+                  onClick={(e) => toggleFavorite(product.id, e)}
+                >
+                  <FiHeart />
                 </button>
-                <button className={styles.viewButton}>Quick View</button>
+                
+                {/* Quick actions */}
+                <div className={`${styles.quickActions} ${isHovered === product.id ? styles.visible : ''}`}>
+                  <button className={styles.quickActionButton}>
+                    <FiShoppingCart />
+                  </button>
+                  <button className={styles.viewButton}>Quick View</button>
+                </div>
+              </div>
+              
+              <div className={styles.productDetails}>
+                <h3 className={styles.productTitle}>{product.name}</h3>
+                <div className={styles.priceContainer}>
+                  {product.originalPrice && (
+                    <span className={styles.originalPrice}>{product.currency || '$'}{product.originalPrice.toFixed(2)}</span>
+                  )}
+                  <span className={styles.price}>{product.currency || '$'}{product.price.toFixed(2)}</span>
+                </div>
+                <div className={styles.ratingContainer}>
+                  {[...Array(5)].map((_, i) => (
+                    <span 
+                      key={i} 
+                      className={`${styles.star} ${i < product.rating ? styles.filled : ''}`}
+                    >
+                      ★
+                    </span>
+                  ))}
+                  <span className={styles.reviewCount}>({product.reviews})</span>
+                </div>
+                <button className={styles.ctaButton}>
+                  <span>Get a Free Design</span>
+                  <span className={styles.hoverEffect}></span>
+                </button>
               </div>
             </div>
-            
-            <div className={styles.productDetails}>
-              <h3 className={styles.productTitle}>{product.name}</h3>
-              <div className={styles.priceContainer}>
-                {product.originalPrice && (
-                  <span className={styles.originalPrice}>${product.originalPrice}</span>
-                )}
-                <span className={styles.price}>${product.price}</span>
-              </div>
-              <div className={styles.ratingContainer}>
-                {[...Array(5)].map((_, i) => (
-                  <span 
-                    key={i} 
-                    className={`${styles.star} ${i < product.rating ? styles.filled : ''}`}
-                  >
-                    ★
-                  </span>
-                ))}
-                <span className={styles.reviewCount}>({product.reviews})</span>
-              </div>
-              <button className={styles.ctaButton}>
-                <span>Get a Free Design</span>
-                <span className={styles.hoverEffect}></span>
-              </button>
-            </div>
+          ))
+        ) : (
+          <div className={styles.noProducts}>
+            <p>No products found in this category.</p>
           </div>
-        ))}
+        )}
       </div>
 
       {/* Enhanced Pagination */}
-      <div className={styles.paginationContainer}>
-        <div className={styles.resultsInfo}>
-          Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, sortedProducts.length)} of {sortedProducts.length} products
-        </div>
-        
-        <div className={styles.paginationControls}>
-          <button 
-            className={`${styles.paginationButton} ${currentPage === 1 ? styles.disabled : ''}`}
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            <FiChevronLeft />
-          </button>
+      {currentItems.length > 0 && (
+        <div className={styles.paginationContainer}>
+          <div className={styles.resultsInfo}>
+            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, sortedProducts.length)} of {sortedProducts.length} products
+          </div>
           
-          {getPaginationRange().map((page, index) => (
-            page === '...' ? (
-              <span key={index} className={styles.paginationEllipsis}>...</span>
-            ) : (
-              <button
-                key={index}
-                className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
-                onClick={() => handlePageChange(page)}
-              >
-                {page}
-              </button>
-            )
-          ))}
-          
-          <button 
-            className={`${styles.paginationButton} ${currentPage === totalPages ? styles.disabled : ''}`}
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            <FiChevronRight />
-          </button>
+          <div className={styles.paginationControls}>
+            <button 
+              className={`${styles.paginationButton} ${currentPage === 1 ? styles.disabled : ''}`}
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <FiChevronLeft />
+            </button>
+            
+            {getPaginationRange().map((page, index) => (
+              page === '...' ? (
+                <span key={index} className={styles.paginationEllipsis}>...</span>
+              ) : (
+                <button
+                  key={index}
+                  className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page}
+                </button>
+              )
+            ))}
+            
+            <button 
+              className={`${styles.paginationButton} ${currentPage === totalPages ? styles.disabled : ''}`}
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              <FiChevronRight />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../lib/firebase"; // Adjust the path to your Firebase config
+import { db } from "../../lib/firebase";
 import styles from "./ProductSection.module.css";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { useRouter } from "next/router"; // Import Next.js router
 
 const ProductSection = () => {
   const [activeTab, setActiveTab] = useState("basketball");
@@ -12,6 +13,7 @@ const ProductSection = () => {
     baseball: []
   });
   const [loading, setLoading] = useState(true);
+  const router = useRouter(); // Initialize the router
 
   const sliderRef = useRef(null);
 
@@ -27,17 +29,14 @@ const ProductSection = () => {
 
         querySnapshot.forEach((doc) => {
           const productData = doc.data();
-          // For simplicity, we'll categorize based on the name or you can add a category field
-          // This is a basic categorization - adjust according to your actual data structure
           const product = {
             id: doc.id,
             name: productData.name,
             price: `${productData.salePrice} ${productData.currency}`,
-            image: productData.images?.front || "https://static.vecteezy.com/system/resources/previews/028/047/017/non_2x/3d-check-product-free-png.png",
+            image: productData.swatches[0].images?.front || "https://static.vecteezy.com/system/resources/previews/028/047/017/non_2x/3d-check-product-free-png.png",
             delivery: `${productData.deliveryTime} days delivery`
           };
 
-          // Simple categorization logic - modify based on your actual data
           if (productData.name.toLowerCase().includes("basketball")) {
             productsData.basketball.push(product);
           } else if (productData.name.toLowerCase().includes("football")) {
@@ -45,7 +44,6 @@ const ProductSection = () => {
           } else if (productData.name.toLowerCase().includes("baseball")) {
             productsData.baseball.push(product);
           } else {
-            // Default to basketball if no category is matched
             productsData.basketball.push(product);
           }
         });
@@ -70,6 +68,11 @@ const ProductSection = () => {
       const scrollAmount = direction === "left" ? -300 : 300;
       sliderRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
     }
+  };
+
+  const handleCustomClick = (productId) => {
+    // Navigate to the product details page using Next.js router
+    router.push(`/product/${productId}`);
   };
 
   if (loading) {
@@ -116,7 +119,12 @@ const ProductSection = () => {
                 <h3 className={styles.productName}>{product.name}</h3>
                 <p className={styles.productPrice}>{product.price}</p>
                 <p className={styles.delivery}>{product.delivery}</p>
-                <button className={styles.ctaButton}>Custom</button>
+                <button 
+                  className={styles.ctaButton}
+                  onClick={() => handleCustomClick(product.id)} // Updated click handler
+                >
+                  View
+                </button>
               </div>
             ))
           ) : (

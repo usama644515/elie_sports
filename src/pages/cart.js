@@ -1,10 +1,9 @@
 import Head from "next/head";
 import Header2 from "../components/Header2";
 import Footer from "../components/Footer";
-import ProductPage from "../components/Product/ProductPage";
-import RecommendedProducts from "../components/Product/RecommendedProducts";
+import CartScreen from "../components/Checkout/CartScreen";
 
-export default function Product() {
+export default function Order() {
   return (
     <>
       <Head>
@@ -17,8 +16,7 @@ export default function Product() {
 
       <main>
         {/* Use Banner component */}
-        <ProductPage />
-        <RecommendedProducts />
+        <CartScreen />
       </main>
       <Footer />
     </>
