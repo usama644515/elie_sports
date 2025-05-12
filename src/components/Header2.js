@@ -295,7 +295,7 @@ const Header2 = () => {
               <Link href="/contact"><span className={styles.menuText}>Contact</span></Link>
             </li>
             {/* More Menu */}
-            <li
+            {/* <li
               className={styles.navItem}
               onMouseEnter={() => setActiveDropdown("more")}
               onMouseLeave={() => {
@@ -332,7 +332,7 @@ const Header2 = () => {
                   </div>
                 </div>
               </div>
-            </li>
+            </li> */}
           </ul>
         </nav>
 
