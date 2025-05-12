@@ -62,9 +62,7 @@ const ProductPage = () => {
               price: productData.salePrice,
               minPrice: productData.salePrice,
               minQuantity: 1,
-              colors: productData.swatches?.[0]?.variations?.map(
-                (v) => v.color
-              ) || ["DEFAULT"],
+              colors: productData.swatches?.[0] ["DEFAULT"],
               sizes: productData.swatches[0].sizes || ["S", "M", "L"],
               deliveryEstimate: `${productData.deliveryTime} days`,
               images: [

@@ -1,10 +1,50 @@
 /* eslint-disable @next/next/no-img-element */
-import { useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 import styles from './RecommendedProducts.module.css';
 import { FiChevronLeft, FiChevronRight, FiTruck } from 'react-icons/fi';
+import { useRouter } from 'next/router';
 
 const RecommendedProducts = () => {
   const sliderRef = useRef(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "Products"));
+        const productsData = [];
+
+        querySnapshot.forEach((doc) => {
+          const productData = doc.data();
+          const product = {
+            id: doc.id,
+            brand: productData.brand || "SPORTIFY",
+            name: productData.name,
+            price: `$${productData.salePrice || productData.price}`,
+            quantity: "(1,000+)",
+            minPrice: `Min. Quantity: 1 ($${((productData.salePrice || productData.price) * 1.25).toFixed(2)}/item)`,
+            delivery: `${productData.deliveryTime || 3} days delivery`,
+            image: productData.swatches?.[0]?.images?.front || "https://static.vecteezy.com/system/resources/previews/028/047/017/non_2x/3d-check-product-free-png.png",
+          };
+          productsData.push(product);
+        });
+
+        // Shuffle array and take first 6 items for recommended products
+        const shuffled = productsData.sort(() => 0.5 - Math.random());
+        setProducts(shuffled.slice(0, 6));
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching products: ", error);
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const scrollLeft = () => {
     if (sliderRef.current) {
@@ -18,62 +58,18 @@ const RecommendedProducts = () => {
     }
   };
 
-  const products = [
-    {
-      brand: "EASTON",
-      name: "Easton Fungo F4 Baseball Bat A11160435",
-      price: "$89.99",
-      quantity: "(1,000+)",
-      minPrice: "Min. Quantity: 1 ($112.49/item)",
-      delivery: "May 8",
-      image: "/images/product.webp",
-    },
-    {
-      brand: "ALLISON",
-      name: "Allison Womenix/Girls Belt Loop Softball Pants",
-      price: "$24.99",
-      quantity: "(1,000+)",
-      minPrice: "Min. Quantity: 1 ($31.24/item)",
-      delivery: "May 8",
-      image: "/images/product.jpg",
-    },
-    {
-      brand: "ALLISON",
-      name: "Allison Double Knit Knicker Custom Baseball Pants",
-      price: "$20.99",
-      quantity: "(1,000+)",
-      minPrice: "Min. Quantity: 1 ($26.24/item)",
-      delivery: "May 8",
-      image: "/images/product.jpg",
-    },
-    {
-      brand: "ACACIA",
-      name: "Home Run Baseball Batting Gloves Adult Youth PAIR",
-      price: "$26.99",
-      quantity: "(1,000+)",
-      minPrice: "Min. Quantity: 1 ($33.74/item)",
-      delivery: "May 8",
-      image: "/images/product.jpg",
-    },
-    {
-      brand: "ACACIA",
-      name: "Batter's Gloves",
-      price: "$14.99",
-      quantity: "(1,000+)",
-      minPrice: "Min. Quantity: 1 ($18.74/item)",
-      delivery: "May 8",
-      image: "/images/product.jpg",
-    },
-    {
-      brand: "EASTON",
-      name: "Easton Baseball Helmet",
-      price: "$39.99",
-      quantity: "(1,000+)",
-      minPrice: "Min. Quantity: 1 ($49.99/item)",
-      delivery: "May 8",
-      image: "/images/product.jpg",
-    }
-  ];
+  const handleProductClick = (productId) => {
+    router.push(`/product/${productId}`);
+  };
+
+  if (loading) {
+    return (
+      <section className={styles.recommendedSection}>
+        <h2 className={styles.sectionHeader}>Recommended Products</h2>
+        <div className={styles.loading}>Loading recommended products...</div>
+      </section>
+    );
+  }
 
   return (
     <section className={styles.recommendedSection}>
@@ -88,30 +84,39 @@ const RecommendedProducts = () => {
         </button>
         
         <div className={styles.slider} ref={sliderRef}>
-          {products.map((product, index) => (
-            <div key={index} className={styles.slide}>
-              <div className={styles.productImageContainer}>
-                <img 
-                  src={product.image} 
-                  alt={product.name} 
-                  className={styles.productImage}
-                />
-                <button className={styles.orderNowButton}>ORDER NOW</button>
-              </div>
-              <div className={styles.productContent}>
-                <div className={styles.brand}>{product.brand}</div>
-                <h3 className={styles.productName}>{product.name}</h3>
-                <div className={styles.priceInfo}>
-                  <div className={styles.price}>{product.price}</div>
-                  <div className={styles.quantity}>{product.quantity}</div>
+          {products.length > 0 ? (
+            products.map((product, index) => (
+              <div 
+                key={product.id || index} 
+                className={styles.slide}
+                onClick={() => handleProductClick(product.id)}
+              >
+                <div className={styles.productImageContainer}>
+                  <img 
+                    src={product.image} 
+                    alt={product.name} 
+                    className={styles.productImage}
+                  />
+                  <button className={styles.orderNowButton}>ORDER NOW</button>
                 </div>
-                <div className={styles.delivery}>
-                  <FiTruck className={styles.deliveryIcon} />
-                  <span>Delivery: {product.delivery}</span>
+                <div className={styles.productContent}>
+                  {/* <div className={styles.brand}>{product.brand}</div> */}
+                  <h3 className={styles.productName}>{product.name}</h3>
+                  <div className={styles.priceInfo}>
+                    <div className={styles.price}>{product.price}</div>
+                    <div className={styles.quantity}>{product.quantity}</div>
+                  </div>
+                  <div className={styles.minPrice}>{product.minPrice}</div>
+                  <div className={styles.delivery}>
+                    <FiTruck className={styles.deliveryIcon} />
+                    <span>Delivery: {product.delivery}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <div className={styles.noProducts}>No recommended products found</div>
+          )}
         </div>
         
         <button 

@@ -1,193 +1,361 @@
 .productSection {
-    width: 100%;
-    margin: 40px auto;
-    padding: 20px;
-    text-align: center;
+  margin: 2rem 0;
+  padding: 0 1rem;
+  position: relative;
+}
+
+.sectionHeader {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #333;
+  text-align: center;
+  position: relative;
+  display: inline-block;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.sectionHeader::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #1F6DAD, #FA5C59);
+  border-radius: 3px;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.tabsContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.tabs {
+  display: flex;
+  background-color: #f4f4f4;
+  padding: 0.5rem;
+  border-radius: 30px;
+}
+
+.tabButton {
+  background: none;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  font-size: 0.9rem;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.tabButton:hover {
+  color: #1F6DAD;
+}
+
+.activeTab {
+  background-color: white;
+  color: #1F6DAD;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.productsContainer {
+  position: relative;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2.5rem;
+}
+
+.slider {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0.5rem 0;
+}
+
+.slider::-webkit-scrollbar {
+  display: none;
+}
+
+.slide {
+  width: 250px;
+  min-width: 250px;
+  background: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.slide:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+}
+
+.productImageContainer {
+  width: 100%;
+  aspect-ratio: 1/1;
+  position: relative;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.slide:hover .productImage {
+  transform: scale(1.05);
+}
+
+.orderNowButton {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  opacity: 0;
+  background: linear-gradient(90deg, #1F6DAD, #3A86FF);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.8rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.9rem;
+  z-index: 2;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.slide:hover .orderNowButton {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.orderNowButton:hover {
+  background: linear-gradient(90deg, #1a5d95, #2e6fd9);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.productContent {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.brand {
+  font-weight: 700;
+  color: #1F6DAD;
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.productName {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.6rem;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.priceInfo {
+  margin-top: auto;
+  margin-bottom: 0.5rem;
+}
+
+.price {
+  font-weight: 700;
+  color: #1F6DAD;
+  font-size: 1.1rem;
+  margin-bottom: 0.2rem;
+}
+
+.quantity {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.delivery {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #1F6DAD;
+  padding-top: 0.6rem;
+  border-top: 1px dashed #e0e0e0;
+  margin-top: auto;
+}
+
+.deliveryIcon {
+  font-size: 0.9rem;
+}
+
+.navButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.navButton:hover {
+  background: #f0f0f0;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.navButtonLeft {
+  left: 0;
+}
+
+.navButtonRight {
+  right: 0;
+}
+
+.navIcon {
+  font-size: 1.3rem;
+  color: #333;
+}
+
+.viewAllButton {
+  display: block;
+  margin: 2rem auto 0;
+  background: transparent;
+  color: #1F6DAD;
+  border: 2px solid #1F6DAD;
+  padding: 0.8rem 2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.viewAllButton:hover {
+  background: #1F6DAD;
+  color: white;
+}
+
+.noProducts {
+  width: 100%;
+  text-align: center;
+  padding: 3rem;
+  font-size: 1rem;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .sectionHeader {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
   }
   
-  .heading {
-    font-size: 32px;
-    font-weight: 700;
-    color: black;
-    margin-bottom: 30px;
-    margin-top: 40px;
-  }
-  .tabsMain{
-    display: flex;
-    justify-content: center;
+  .productsContainer {
+    padding: 0 1.5rem;
   }
   
-  .tabs {
-    width: 700px;
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-    background-color: #f4f4f4;  /* Background color for the entire tab bar */
-    padding: 10px;
-    border-radius: 5px;
+  .navButton {
+    width: 36px;
+    height: 36px;
+    display: none;
   }
   
-  .tabButton {
-    background: none;
-    border: none;
-    padding: 12px 25px;
-    font-size: 16px;
-    color: #333;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin: 0 10px;
-    border-radius: 4px;
+  .slider {
+    gap: 0.8rem;
+    padding: 0.3rem 0;
   }
   
-  .tabButton:hover {
-    background-color: white;
-    color: black;
+  .slide {
+    min-width: 200px;
+    width: 200px;
   }
   
-  .activeTab {
-    background-color: white;
-    color: black;
-  }
-  
-  .productSliderWrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-  }
-  
-  .productSlider {
-    display: flex;
-    overflow-x: auto;
-    gap: 20px;
-    scroll-snap-type: x mandatory;
-    padding-bottom: 20px;
-    -ms-overflow-style: none; /* For Internet Explorer */
-    scrollbar-width: none; /* For Firefox */
-  }
-  
-  .productSlider::-webkit-scrollbar {
-    display: none; /* Hide scrollbar in Webkit browsers (Chrome, Safari, etc.) */
-  }
-  
-  .productCard {
-    flex-shrink: 0;
-    width: 250px;
-    background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 15px;
-    text-align: center;
-    scroll-snap-align: center;
-    border-radius: 8px;
-    transition: transform 0.3s ease;
-  }
-  
-  .productCard:hover {
-    transform: scale(1.05);
-  }
-  
-  .productImage {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 8px;
+  .productContent {
+    padding: 0.8rem;
   }
   
   .productName {
-    font-size: 18px;
-    font-weight: 600;
-    margin: 10px 0;
+    font-size: 0.85rem;
   }
   
-  .productPrice {
-    font-size: 16px;
-    color: #1f6dad;
+  .price {
+    font-size: 1rem;
   }
-  
-  .delivery {
-    font-size: 14px;
-    color: #666;
-    margin: 5px 0;
-  }
-  
-  .ctaButton {
+}
 
-    background-color: #1f6dad;
-    color: white;
-    border: none;
-    padding: 12px 50px;
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 10px;
+@media (max-width: 480px) {
+  .sectionHeader {
+    font-size: 1.3rem;
   }
   
-  .ctaButton:hover {
-    background-color: #155a8a;
+  .productsContainer {
+    padding: 0 1rem;
   }
   
-  .viewAllButton {
-    background-color: transparent;
-    color: black;
-    border: 1px solid black;
-    padding: 15px 30px;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    display: block;
-    margin: 20px auto;
+  .slide {
+    min-width: 180px;
+    width: 180px;
   }
   
-  .viewAllButton:hover {
-    background-color: black;
-    color: white;
+  .productName {
+    font-size: 0.8rem;
   }
   
-  .scrollButton {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: #1f6dad;
-    color: white;
-    border: none;
-    padding: 15px;
-    font-size: 20px;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 1;
-    transition: background-color 0.3s;
+  .price {
+    font-size: 0.95rem;
   }
   
-  .scrollButton:hover {
-    background-color: #155a8a;
+  .orderNowButton {
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
   }
   
-  .scrollButton:first-child {
-    left: 0;
+  .tabs {
+    padding: 0.3rem;
   }
   
-  .scrollButton:last-child {
-    right: 0;
+  .tabButton {
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
   }
-  
-  @media (max-width: 768px) {
-    .productSlider {
-      gap: 10px;
-    }
-  
-    .productCard {
-      width: 200px;
-    }
-  }
-  
-  .noProducts {
-    width: 100%;
-    text-align: center;
-    padding: 40px;
-    font-size: 18px;
-    color: #666;
-  }
+}

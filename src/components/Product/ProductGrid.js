@@ -1,12 +1,20 @@
-import { useState, useEffect } from 'react';
-import styles from './ProductGrid.module.css';
-import { FiChevronLeft, FiChevronRight, FiHeart, FiShoppingCart, FiChevronDown } from 'react-icons/fi';
+/* eslint-disable @next/next/no-img-element */
+import { useState, useEffect } from "react";
+import styles from "./ProductGrid.module.css";
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiHeart,
+  FiShoppingCart,
+  FiChevronDown,
+  FiTruck,
+} from "react-icons/fi";
+import { useRouter } from "next/router";
 
 const ProductGrid = ({ products }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [favorites, setFavorites] = useState([]);
-  const [isHovered, setIsHovered] = useState(null);
-  const [sortOption, setSortOption] = useState('default');
+  const [sortOption, setSortOption] = useState("default");
   const [sortedProducts, setSortedProducts] = useState(products);
   const itemsPerPage = 12;
 
@@ -14,16 +22,16 @@ const ProductGrid = ({ products }) => {
   useEffect(() => {
     let sorted = [...products];
     switch (sortOption) {
-      case 'price-low':
+      case "price-low":
         sorted.sort((a, b) => a.price - b.price);
         break;
-      case 'price-high':
+      case "price-high":
         sorted.sort((a, b) => b.price - a.price);
         break;
-      case 'rating':
+      case "rating":
         sorted.sort((a, b) => b.rating - a.rating);
         break;
-      case 'newest':
+      case "newest":
         sorted.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
         break;
       default:
@@ -33,7 +41,10 @@ const ProductGrid = ({ products }) => {
     setSortedProducts(sorted);
     setCurrentPage(1); // Reset to first page when sorting changes
   }, [sortOption, products]);
-
+  const router = useRouter();
+  const handleProductClick = (productId) => {
+    router.push(`/product/${productId}`);
+  };
   // Calculate pagination
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -43,15 +54,15 @@ const ProductGrid = ({ products }) => {
   // Handle page change
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Toggle favorite
   const toggleFavorite = (productId, e) => {
     e.stopPropagation();
-    setFavorites(prev =>
+    setFavorites((prev) =>
       prev.includes(productId)
-        ? prev.filter(id => id !== productId)
+        ? prev.filter((id) => id !== productId)
         : [...prev, productId]
     );
   };
@@ -60,7 +71,7 @@ const ProductGrid = ({ products }) => {
   const getPaginationRange = () => {
     const range = [];
     const maxVisiblePages = 5;
-    
+
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
         range.push(i);
@@ -68,33 +79,37 @@ const ProductGrid = ({ products }) => {
     } else {
       const leftOffset = Math.floor(maxVisiblePages / 2);
       const rightOffset = Math.ceil(maxVisiblePages / 2) - 1;
-      
+
       if (currentPage <= leftOffset) {
         // Beginning of range
         for (let i = 1; i <= maxVisiblePages; i++) {
           range.push(i);
         }
-        range.push('...');
+        range.push("...");
         range.push(totalPages);
       } else if (currentPage >= totalPages - rightOffset) {
         // End of range
         range.push(1);
-        range.push('...');
+        range.push("...");
         for (let i = totalPages - maxVisiblePages + 1; i <= totalPages; i++) {
           range.push(i);
         }
       } else {
         // Middle of range
         range.push(1);
-        range.push('...');
-        for (let i = currentPage - leftOffset; i <= currentPage + rightOffset; i++) {
+        range.push("...");
+        for (
+          let i = currentPage - leftOffset;
+          i <= currentPage + rightOffset;
+          i++
+        ) {
           range.push(i);
         }
-        range.push('...');
+        range.push("...");
         range.push(totalPages);
       }
     }
-    
+
     return range;
   };
 
@@ -103,9 +118,11 @@ const ProductGrid = ({ products }) => {
       {/* Sorting Controls */}
       <div className={styles.sortingControls}>
         <div className={styles.sortByContainer}>
-          <label htmlFor="sort-by" className={styles.sortByLabel}>Sort by:</label>
+          <label htmlFor="sort-by" className={styles.sortByLabel}>
+            Sort by:
+          </label>
           <div className={styles.customSelect}>
-            <select 
+            <select
               id="sort-by"
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value)}
@@ -129,65 +146,41 @@ const ProductGrid = ({ products }) => {
       <div className={styles.productGrid}>
         {currentItems.length > 0 ? (
           currentItems.map((product) => (
-            <div 
-              key={product.id} 
+            <div
+              key={product.id}
               className={styles.productCard}
-              onMouseEnter={() => setIsHovered(product.id)}
-              onMouseLeave={() => setIsHovered(null)}
+              onClick={() => handleProductClick(product.id)}
             >
-              <div className={styles.imageContainer}>
-                <img 
-                  src={product.image} 
-                  alt={product.name} 
-                  className={`${styles.productImage} ${isHovered === product.id ? styles.zoomed : ''}`}
+              <div className={styles.productImageContainer}>
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className={styles.productImage}
                 />
-                
-                {/* Product badges */}
-                <div className={styles.badgeContainer}>
-                  {product.isNew && <span className={styles.newBadge}>New</span>}
-                  {product.discount && <span className={styles.discountBadge}>-{product.discount}%</span>}
-                </div>
-                
-                {/* Favorite button */}
-                <button 
-                  className={`${styles.favoriteButton} ${favorites.includes(product.id) ? styles.favorited : ''}`}
+                <button className={styles.orderNowButton}>ORDER NOW</button>
+                <button
+                  className={`${styles.favoriteButton} ${
+                    favorites.includes(product.id) ? styles.favorited : ""
+                  }`}
                   onClick={(e) => toggleFavorite(product.id, e)}
                 >
                   <FiHeart />
                 </button>
-                
-                {/* Quick actions */}
-                <div className={`${styles.quickActions} ${isHovered === product.id ? styles.visible : ''}`}>
-                  <button className={styles.quickActionButton}>
-                    <FiShoppingCart />
-                  </button>
-                  <button className={styles.viewButton}>Quick View</button>
-                </div>
               </div>
-              
-              <div className={styles.productDetails}>
-                <h3 className={styles.productTitle}>{product.name}</h3>
-                <div className={styles.priceContainer}>
-                  {product.originalPrice && (
-                    <span className={styles.originalPrice}>{product.currency || '$'}{product.originalPrice.toFixed(2)}</span>
-                  )}
-                  <span className={styles.price}>{product.currency || '$'}{product.price.toFixed(2)}</span>
+
+              <div className={styles.productContent}>
+                <h3 className={styles.productName}>{product.name}</h3>
+                <div className={styles.priceInfo}>
+                  <div className={styles.price}>
+                    {product.currency || "$"}
+                    {product.price.toFixed(2)}
+                  </div>
+                  <div className={styles.quantity}>(1,000+)</div>
                 </div>
-                <div className={styles.ratingContainer}>
-                  {[...Array(5)].map((_, i) => (
-                    <span 
-                      key={i} 
-                      className={`${styles.star} ${i < product.rating ? styles.filled : ''}`}
-                    >
-                      ★
-                    </span>
-                  ))}
-                  <span className={styles.reviewCount}>({product.reviews})</span>
+                <div className={styles.delivery}>
+                  <FiTruck className={styles.deliveryIcon} />
+                  <span>Delivery: May 8</span>
                 </div>
-                <button className={styles.ctaButton}>
-                  <span>Get a Free Design</span>
-                  <span className={styles.hoverEffect}></span>
-                </button>
               </div>
             </div>
           ))
@@ -202,34 +195,44 @@ const ProductGrid = ({ products }) => {
       {currentItems.length > 0 && (
         <div className={styles.paginationContainer}>
           <div className={styles.resultsInfo}>
-            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, sortedProducts.length)} of {sortedProducts.length} products
+            Showing {indexOfFirstItem + 1}-
+            {Math.min(indexOfLastItem, sortedProducts.length)} of{" "}
+            {sortedProducts.length} products
           </div>
-          
+
           <div className={styles.paginationControls}>
-            <button 
-              className={`${styles.paginationButton} ${currentPage === 1 ? styles.disabled : ''}`}
+            <button
+              className={`${styles.paginationButton} ${
+                currentPage === 1 ? styles.disabled : ""
+              }`}
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
               <FiChevronLeft />
             </button>
-            
-            {getPaginationRange().map((page, index) => (
-              page === '...' ? (
-                <span key={index} className={styles.paginationEllipsis}>...</span>
+
+            {getPaginationRange().map((page, index) =>
+              page === "..." ? (
+                <span key={index} className={styles.paginationEllipsis}>
+                  ...
+                </span>
               ) : (
                 <button
                   key={index}
-                  className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
+                  className={`${styles.paginationButton} ${
+                    currentPage === page ? styles.active : ""
+                  }`}
                   onClick={() => handlePageChange(page)}
                 >
                   {page}
                 </button>
               )
-            ))}
-            
-            <button 
-              className={`${styles.paginationButton} ${currentPage === totalPages ? styles.disabled : ''}`}
+            )}
+
+            <button
+              className={`${styles.paginationButton} ${
+                currentPage === totalPages ? styles.disabled : ""
+              }`}
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
             >
