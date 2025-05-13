@@ -4,7 +4,7 @@ import { doc, getDoc, setDoc, collection, serverTimestamp } from "firebase/fires
 import { db, auth } from "../../lib/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import styles from "./ProductPage.module.css";
-import LoginModal from "../Modal/LoginModal"; // You'll need to create this component
+import LoginModal from "../Modal/LoginModal";
 
 const ProductPage = () => {
   const router = useRouter();
@@ -24,18 +24,22 @@ const ProductPage = () => {
   const [cartMessage, setCartMessage] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [quoteForm, setQuoteForm] = useState({
-    name: "",
-    email: "",
+    name: user?.displayName || "",
+    email: user?.email || "",
     phone: "",
     message: ""
   });
-  const [showQuoteForm, setShowQuoteForm] = useState(false);
 
   // Check auth state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
+        setQuoteForm(prev => ({
+          ...prev,
+          name: user.displayName || prev.name,
+          email: user.email || prev.email
+        }));
       } else {
         setUser(null);
       }
@@ -54,6 +58,26 @@ const ProductPage = () => {
 
           if (docSnap.exists()) {
             const productData = docSnap.data();
+            const swatches = productData.swatches || [];
+            
+            // Get available colors from swatches
+            const colors = swatches.map(swatch => ({
+              hex: swatch.color,
+              name: `#${swatch.color}`
+            }));
+
+            // Set initial selected color (first one)
+            const initialColor = colors[0]?.hex;
+            
+            // Get sizes for initial color
+            const initialSwatch = swatches.find(s => s.color === initialColor) || swatches[0];
+            const initialSizes = initialSwatch?.sizes || [];
+            
+            // Check if product is customizable
+            const isCustomizable = swatches.some(swatch => 
+              swatch.designItems && swatch.designItems.length > 0
+            );
+
             setProduct({
               ...productData,
               id: docSnap.id,
@@ -62,14 +86,16 @@ const ProductPage = () => {
               price: productData.salePrice,
               minPrice: productData.salePrice,
               minQuantity: 1,
-              colors: productData.swatches?.[0] ["DEFAULT"],
-              sizes: productData.swatches[0].sizes || ["S", "M", "L"],
+              colors,
+              sizes: initialSizes,
+              currentSwatch: initialSwatch,
+              swatches,
               deliveryEstimate: `${productData.deliveryTime} days`,
               images: [
-                productData.swatches[0].images?.front || "/images/product.jpg",
-                productData.swatches[0].images?.back || "/images/product.jpg",
-                productData.swatches[0].images?.left || "/images/product.jpg",
-                productData.swatches[0].images?.right || "/images/product.jpg",
+                initialSwatch.images?.front || "/images/product.jpg",
+                initialSwatch.images?.back || "/images/product.jpg",
+                initialSwatch.images?.left || "/images/product.jpg",
+                initialSwatch.images?.right || "/images/product.jpg",
               ],
               features: [
                 productData.description || "Premium quality product",
@@ -77,18 +103,16 @@ const ProductPage = () => {
                 `Subcategory: ${productData.subCategory}`,
                 `Delivery in ${productData.deliveryTime} days`,
               ],
-              description:
-                productData.description || "No description available",
-              isCustomizable:
-                productData.designItems && productData.designItems.length > 0,
+              description: productData.description || "No description available",
+              isCustomizable
             });
 
             // Set initial selections
-            if (productData.sizes?.length > 0) {
-              setSelectedSize(productData.sizes[0]);
+            if (initialSizes.length > 0) {
+              setSelectedSize(initialSizes[0]);
             }
-            if (productData.swatches?.[0]?.variations?.length > 0) {
-              setSelectedColor(productData.swatches[0].variations[0].color);
+            if (initialColor) {
+              setSelectedColor(initialColor);
             }
           } else {
             console.log("No such product!");
@@ -103,6 +127,30 @@ const ProductPage = () => {
       fetchProduct();
     }
   }, [id]);
+
+  // Update product when color changes
+  useEffect(() => {
+    if (product && selectedColor) {
+      const selectedSwatch = product.swatches.find(s => s.color === selectedColor);
+      if (selectedSwatch) {
+        setProduct(prev => ({
+          ...prev,
+          sizes: selectedSwatch.sizes || [],
+          currentSwatch: selectedSwatch,
+          images: [
+            selectedSwatch.images?.front || "/images/product.jpg",
+            selectedSwatch.images?.back || "/images/product.jpg",
+            selectedSwatch.images?.left || "/images/product.jpg",
+            selectedSwatch.images?.right || "/images/product.jpg",
+          ]
+        }));
+        // Reset size selection when color changes
+        setSelectedSize(selectedSwatch.sizes?.[0] || null);
+        // Reset image to first one
+        setCurrentImageIndex(0);
+      }
+    }
+  }, [selectedColor]);
 
   // Handlers
   const increaseQuantity = () => setQuantity((prev) => prev + 1);
@@ -181,7 +229,7 @@ const ProductPage = () => {
   const handleBuyNow = async () => {
     await handleAddToCart();
     if (user) {
-      router.push("/checkout");
+      router.push("/cart");
     }
   };
 
@@ -190,7 +238,7 @@ const ProductPage = () => {
       setShowLoginModal(true);
       return;
     }
-    router.push(`/customize/${product.id}`);
+    router.push(`/customize/${product.id}?color=${selectedColor}`);
   };
 
   const handleQuoteSubmit = async (e) => {
@@ -200,6 +248,9 @@ const ProductPage = () => {
         ...quoteForm,
         productId: product.id,
         productName: product.title,
+        selectedColor,
+        selectedSize,
+        quantity,
         createdAt: serverTimestamp(),
         status: "pending"
       };
@@ -213,10 +264,9 @@ const ProductPage = () => {
       await setDoc(quoteRef, quoteData);
       
       setCartMessage("Your quote request has been submitted successfully!");
-      setShowQuoteForm(false);
       setQuoteForm({
-        name: "",
-        email: "",
+        name: user?.displayName || "",
+        email: user?.email || "",
         phone: "",
         message: ""
       });
@@ -399,30 +449,30 @@ const ProductPage = () => {
             </div>
           </div>
 
-          {product.colors && (
+          {product.colors && product.colors.length > 0 && (
             <div className={styles.colorSelection}>
               <h3 className={styles.sectionTitle}>
-                Color: <span>{selectedColor || "Select"}</span>
+                Color: <span>{selectedColor ? `#${selectedColor}` : "Select"}</span>
               </h3>
               <div className={styles.colorOptions}>
                 {product.colors.map((color) => (
                   <button
-                    key={color}
+                    key={color.hex}
                     className={`${styles.colorOption} ${
-                      color === selectedColor ? styles.active : ""
+                      color.hex === selectedColor ? styles.active : ""
                     }`}
-                    onClick={() => setSelectedColor(color)}
-                    aria-label={`Select color ${color}`}
-                    style={{ backgroundColor: `#${color}` }}
+                    onClick={() => setSelectedColor(color.hex)}
+                    aria-label={`Select color ${color.name}`}
+                    style={{ backgroundColor: `#${color.hex}` }}
                   >
-                    {color === selectedColor ? "✓" : ""}
+                    {color.hex === selectedColor ? "✓" : ""}
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {product.sizes && (
+          {product.sizes && product.sizes.length > 0 && (
             <div className={styles.sizeSelection}>
               <div className={styles.sizeHeader}>
                 <h3 className={styles.sectionTitle}>Size</h3>
@@ -470,45 +520,33 @@ const ProductPage = () => {
           )}
 
           <div className={styles.actionButtons}>
-            {product.isCustomizable ? (
-              <>
-                <button
-                  className={styles.customizeButton}
-                  onClick={handleCustomize}
-                >
-                  CUSTOMIZE PRODUCT
-                </button>
-                <button
-                  className={styles.addToCartButton}
-                  onClick={handleAddToCart}
-                >
-                  <span className={styles.cartIcon}>🛒</span> ADD TO CART
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  className={styles.addToCartButton}
-                  onClick={handleAddToCart}
-                >
-                  <span className={styles.cartIcon}>🛒</span> ADD TO CART
-                </button>
-                {!product.isCustomizable && (
-                  <button 
-                    className={styles.quoteButton}
-                    onClick={() => setShowQuoteForm(!showQuoteForm)}
-                  >
-                    GET INSTANT QUOTE
-                  </button>
-                )}
-              </>
+            {product.isCustomizable && (
+              <button
+                className={styles.customizeButton}
+                onClick={handleCustomize}
+              >
+                CUSTOMIZE PRODUCT
+              </button>
             )}
+            <button
+              className={styles.addToCartButton}
+              onClick={handleAddToCart}
+            >
+              <span className={styles.cartIcon}>🛒</span> ADD TO CART
+            </button>
+            {/* <button
+              className={styles.buyNowButton}
+              onClick={handleBuyNow}
+            >
+              BUY NOW
+            </button> */}
           </div>
 
-          {showQuoteForm && (
-            <div className={styles.quoteForm}>
-              <h3>Request a Quote</h3>
-              <form onSubmit={handleQuoteSubmit}>
+          {/* Always visible quote form */}
+          <div className={styles.quoteForm}>
+            <h3>Request a Quote</h3>
+            <form onSubmit={handleQuoteSubmit}>
+              <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label>Name</label>
                   <input
@@ -529,6 +567,8 @@ const ProductPage = () => {
                     required
                   />
                 </div>
+              </div>
+              <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label>Phone</label>
                   <input
@@ -540,19 +580,29 @@ const ProductPage = () => {
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Message</label>
-                  <textarea
-                    name="message"
-                    value={quoteForm.message}
-                    onChange={handleQuoteChange}
+                  <label>Quantity</label>
+                  <input
+                    type="number"
+                    value={quantity}
+                    readOnly
+                    className={styles.readOnlyInput}
                   />
                 </div>
-                <button type="submit" className={styles.submitButton}>
-                  SUBMIT QUOTE REQUEST
-                </button>
-              </form>
-            </div>
-          )}
+              </div>
+              <div className={styles.formGroup}>
+                <label>Message (Optional)</label>
+                <textarea
+                  name="message"
+                  value={quoteForm.message}
+                  onChange={handleQuoteChange}
+                  placeholder="Any special requirements?"
+                />
+              </div>
+              <button type="submit" className={styles.submitButton}>
+                SUBMIT QUOTE REQUEST
+              </button>
+            </form>
+          </div>
 
           <div className={styles.paymentOptions}>
             <div className={styles.paymentTitle}>Secure Payment:</div>

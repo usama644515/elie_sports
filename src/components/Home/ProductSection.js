@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { useState, useRef, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../lib/firebase";
@@ -161,9 +162,9 @@ const ProductSection = () => {
         </button>
       </div>
 
-      <button className={styles.viewAllButton}>
+      {/* <button className={styles.viewAllButton}>
         VIEW ALL {activeTab.toUpperCase()} PRODUCTS
-      </button>
+      </button> */}
     </section>
   );
 };
