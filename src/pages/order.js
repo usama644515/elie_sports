@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Header2 from "../components/Header2";
 import Footer from "../components/Footer";
-import OrderPage from "../components/Order/OrderPage";
+import OrderPage from "../components/Checkout/OrderPage";
 
 export default function Order() {
   return (

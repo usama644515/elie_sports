@@ -37,7 +37,7 @@ const MyOrdersPage = () => {
     setLoading(true);
     const q = query(
       collection(db, "Orders"),
-      where("userId", "==", userId)
+      where("customerID", "==", userId)
     );
     const querySnapshot = await getDocs(q);
 
@@ -80,11 +80,11 @@ const MyOrdersPage = () => {
 
   const filteredOrders = orders.filter(order => {
     if (activeFilter === 'all') return true;
-    return order.status === activeFilter;
+    return order.status.toLowerCase() === activeFilter.toLowerCase();
   });
 
   const getStatusColor = (status) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'processing':
         return '#3182ce'; // blue
       case 'shipped':
@@ -92,14 +92,17 @@ const MyOrdersPage = () => {
       case 'delivered':
         return '#805ad5'; // purple
       case 'cancelled':
+      case 'cancelled':
         return '#e53e3e'; // red
+      case 'pending':
+        return '#d69e2e'; // yellow
       default:
         return '#718096'; // gray
     }
   };
 
   const getStatusIcon = (status) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'processing':
         return '🔄';
       case 'shipped':
@@ -107,7 +110,10 @@ const MyOrdersPage = () => {
       case 'delivered':
         return '✓';
       case 'cancelled':
+      case 'cancelled':
         return '✕';
+      case 'pending':
+        return '⏳';
       default:
         return 'ℹ️';
     }
@@ -165,6 +171,12 @@ const MyOrdersPage = () => {
               All Orders
             </button>
             <button
+              className={`${styles.filterButton} ${activeFilter === 'pending' ? styles.active : ''}`}
+              onClick={() => setActiveFilter('pending')}
+            >
+              Pending
+            </button>
+            <button
               className={`${styles.filterButton} ${activeFilter === 'processing' ? styles.active : ''}`}
               onClick={() => setActiveFilter('processing')}
             >
@@ -211,7 +223,7 @@ const MyOrdersPage = () => {
                     <span className={styles.statusIcon}>{getStatusIcon(order.status)}</span>
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   </div>
-                  <div className={styles.orderTotal}>${order.total.toFixed(2)}</div>
+                  <div className={styles.orderTotal}>{order.currency || 'USD'} {order.total.toFixed(2)}</div>
                   <div className={styles.expandIcon}>
                     {expandedOrder === order.id ? '▲' : '▼'}
                   </div>
@@ -231,9 +243,9 @@ const MyOrdersPage = () => {
                               <div className={styles.itemDetails}>
                                 <h4 className={styles.itemName}>{item.name}</h4>
                                 <p className={styles.itemVariant}>
-                                  {item.color} / {item.size}
+                                  Color: #{item.color} / Size: {item.size}
                                 </p>
-                                <p className={styles.itemPrice}>${item.price.toFixed(2)}</p>
+                                <p className={styles.itemPrice}>{order.currency || 'USD'} {item.price.toFixed(2)}</p>
                                 <p className={styles.itemQuantity}>Qty: {item.quantity}</p>
                               </div>
                             </div>
@@ -243,16 +255,14 @@ const MyOrdersPage = () => {
 
                       <div className={styles.shippingInfo}>
                         <h3>Shipping Info</h3>
-                        <p>{order.shippingInfo.name}</p>
-                        <p>{order.shippingInfo.address}</p>
-                        <p>{order.shippingInfo.city}, {order.shippingInfo.state} {order.shippingInfo.zip}</p>
-                        <p>{order.shippingInfo.country}</p>
+                        <p>{order.customer}</p>
+                        <p>{order.address}</p>
+                        <p>{order.email}</p>
+                        <p>{order.phone}</p>
 
                         <h3>Payment Method</h3>
                         <p>
-                          {order.paymentMethod === 'credit' ? 'Credit/Debit Card' : 
-                           order.paymentMethod === 'paypal' ? 'PayPal' : 
-                           order.paymentMethod}
+                          {order.currency ? `Paid in ${order.currency}` : 'Standard payment'}
                         </p>
                       </div>
                     </div>
@@ -261,26 +271,24 @@ const MyOrdersPage = () => {
                       <h3>Order Summary</h3>
                       <div className={styles.summaryRow}>
                         <span>Subtotal:</span>
-                        <span>${order.subtotal.toFixed(2)}</span>
+                        <span>{order.currency || 'USD'} {order.subtotal.toFixed(2)}</span>
                       </div>
                       <div className={styles.summaryRow}>
                         <span>Shipping:</span>
-                        <span>${order.shipping.toFixed(2)}</span>
+                        <span>{order.currency || 'USD'} {order.shipping.toFixed(2)}</span>
                       </div>
-                      {order.discount > 0 && (
-                        <div className={styles.summaryRow}>
-                          <span>Discount:</span>
-                          <span className={styles.discount}>-${order.discount.toFixed(2)}</span>
-                        </div>
-                      )}
+                      <div className={styles.summaryRow}>
+                        <span>Tax:</span>
+                        <span>{order.currency || 'USD'} {order.tax.toFixed(2)}</span>
+                      </div>
                       <div className={styles.summaryTotal}>
                         <span>Total:</span>
-                        <span>${order.total.toFixed(2)}</span>
+                        <span>{order.currency || 'USD'} {order.total.toFixed(2)}</span>
                       </div>
                     </div>
 
                     <div className={styles.actions}>
-                      {order.status === 'processing' && (
+                      {(order.status === 'pending' || order.status === 'processing') && (
                         <button 
                           className={styles.cancelButton}
                           onClick={() => cancelOrder(order.id)}
@@ -314,7 +322,7 @@ const MyOrdersPage = () => {
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>🛒</div>
           <h2>No Orders Yet</h2>
-          <p>You haven not placed any orders with us yet.</p>
+          <p>You havent placed any orders with us yet.</p>
           <button 
             className={styles.shopButton}
             onClick={() => router.push('/')}

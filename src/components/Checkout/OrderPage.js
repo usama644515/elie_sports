@@ -22,7 +22,7 @@ const OrderPage = () => {
   const [user, setUser] = useState(null);
   const [subtotal, setSubtotal] = useState(0);
   const [shippingCost, setShippingCost] = useState(0);
-  const [discount, setDiscount] = useState(0);
+  const [tax, setTax] = useState(10); // Fixed tax as per schema
   const [orderId, setOrderId] = useState('');
   const [shippingInfo, setShippingInfo] = useState({
     name: '',
@@ -30,7 +30,9 @@ const OrderPage = () => {
     city: '',
     state: '',
     zip: '',
-    country: 'US'
+    country: 'US',
+    phone: '',
+    email: ''
   });
   const [paymentMethod, setPaymentMethod] = useState('credit');
   const [cardDetails, setCardDetails] = useState({
@@ -78,8 +80,16 @@ const OrderPage = () => {
           if (!userDoc.empty) {
             const userData = userDoc.docs[0].data();
             if (userData.shippingInfo) {
-              setShippingInfo(userData.shippingInfo);
+              setShippingInfo({
+                ...userData.shippingInfo,
+                email: user.email || ''
+              });
             }
+          } else {
+            setShippingInfo(prev => ({
+              ...prev,
+              email: user.email || ''
+            }));
           }
         } catch (error) {
           console.error("Error fetching data:", error);
@@ -150,25 +160,33 @@ const OrderPage = () => {
     try {
       setLoading(true);
       
-      // Create order in Firestore
+      // Format address as per schema
+      const formattedAddress = `${shippingInfo.address}, ${shippingInfo.city} ${shippingInfo.state} ${shippingInfo.zip}, ${shippingInfo.country}`;
+      
+      // Create order in Firestore with the exact schema provided
       const orderRef = await addDoc(collection(db, "Orders"), {
-        userId: user.uid,
+        address: formattedAddress,
+        customer: shippingInfo.name,
+        customerID: user.uid,
+        date: new Date().toISOString().split('T')[0], // Format as YYYY-MM-DD
+        email: shippingInfo.email,
         items: cartItems.map(item => ({
-          productId: item.productId,
-          name: item.name,
+          color: item.color || "000000",
+          currency: "EUR",
+          id: item.productId,
           image: item.image,
+          name: item.name,
           price: item.price,
           quantity: item.quantity,
-          color: item.color,
-          size: item.size
+          shipment: shippingCost,
+          size: item.size || "M"
         })),
-        subtotal: subtotal,
+        phone: shippingInfo.phone,
         shipping: shippingCost,
-        discount: discount,
-        total: subtotal + shippingCost - discount,
-        shippingInfo: shippingInfo,
-        paymentMethod: paymentMethod,
-        status: 'processing',
+        status: "Pending",
+        subtotal: subtotal,
+        tax: tax,
+        total: subtotal + shippingCost + tax,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
@@ -182,23 +200,6 @@ const OrderPage = () => {
         batch.delete(itemRef);
       });
       await batch.commit();
-      
-      // Update user's shipping info for future orders
-      const userQuery = query(collection(db, "users"), where("userId", "==", user.uid));
-      const userSnapshot = await getDocs(userQuery);
-      
-      // if (!userSnapshot.empty) {
-      //   const userDoc = userSnapshot.docs[0];
-      //   await updateDoc(doc(db, "users", userDoc.id), {
-      //     shippingInfo: shippingInfo
-      //   });
-      // } else {
-      //   await addDoc(collection(db, "users"), {
-      //     userId: user.uid,
-      //     shippingInfo: shippingInfo,
-      //     createdAt: serverTimestamp()
-      //   });
-      // }
       
       setOrderPlaced(true);
       handleNext(); // Move to confirmation step
@@ -295,10 +296,10 @@ const OrderPage = () => {
                     <p className={styles.productVariant}>
                       {item.color} / {item.size}
                     </p>
-                    <p className={styles.productPrice}>${item.price.toFixed(2)}</p>
+                    <p className={styles.productPrice}>€{item.price.toFixed(2)}</p>
                     <p className={styles.productQuantity}>Qty: {item.quantity}</p>
                     <p className={styles.productTotal}>
-                      ${(item.price * item.quantity).toFixed(2)}
+                      €{(item.price * item.quantity).toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -324,6 +325,32 @@ const OrderPage = () => {
                   value={shippingInfo.name}
                   onChange={handleShippingChange}
                   placeholder="John Doe"
+                  required
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={shippingInfo.email}
+                  onChange={handleShippingChange}
+                  placeholder="your@email.com"
+                  required
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="phone">Phone Number</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={shippingInfo.phone}
+                  onChange={handleShippingChange}
+                  placeholder="123-456-7890"
                   required
                 />
               </div>
@@ -393,9 +420,11 @@ const OrderPage = () => {
                     required
                   >
                     <option value="US">United States</option>
-                    <option value="CA">Canada</option>
                     <option value="UK">United Kingdom</option>
+                    <option value="CA">Canada</option>
                     <option value="AU">Australia</option>
+                    <option value="DE">Germany</option>
+                    <option value="FR">France</option>
                   </select>
                 </div>
               </div>
@@ -519,7 +548,7 @@ const OrderPage = () => {
               <h3>Order Summary</h3>
               <div className={styles.summaryRow}>
                 <span>Items ({cartItems.length}):</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>€{subtotal.toFixed(2)}</span>
               </div>
               <div className={styles.summaryRow}>
                 <span>Shipping:</span>
@@ -527,19 +556,17 @@ const OrderPage = () => {
                   {shippingCost === 0 ? (
                     <span className={styles.freeShipping}>FREE</span>
                   ) : (
-                    `$${shippingCost.toFixed(2)}`
+                    `€${shippingCost.toFixed(2)}`
                   )}
                 </span>
               </div>
-              {discount > 0 && (
-                <div className={styles.summaryRow}>
-                  <span>Discount:</span>
-                  <span className={styles.discount}>-${discount.toFixed(2)}</span>
-                </div>
-              )}
+              <div className={styles.summaryRow}>
+                <span>Tax:</span>
+                <span>€{tax.toFixed(2)}</span>
+              </div>
               <div className={styles.summaryTotal}>
                 <span>Total:</span>
-                <span>${(subtotal + shippingCost - discount).toFixed(2)}</span>
+                <span>€{(subtotal + shippingCost + tax).toFixed(2)}</span>
               </div>
             </div>
             <div className={styles.shippingInfo}>
@@ -548,6 +575,8 @@ const OrderPage = () => {
               <p>{shippingInfo.address}</p>
               <p>{shippingInfo.city}, {shippingInfo.state} {shippingInfo.zip}</p>
               <p>{shippingInfo.country}</p>
+              <p>Phone: {shippingInfo.phone}</p>
+              <p>Email: {shippingInfo.email}</p>
             </div>
             <button 
               onClick={() => router.push('/')}
@@ -565,7 +594,7 @@ const OrderPage = () => {
               <tbody>
                 <tr>
                   <td>Items ({cartItems.length}):</td>
-                  <td>${subtotal.toFixed(2)}</td>
+                  <td>€{subtotal.toFixed(2)}</td>
                 </tr>
                 <tr>
                   <td>Shipping:</td>
@@ -573,19 +602,17 @@ const OrderPage = () => {
                     {shippingCost === 0 ? (
                       <span className={styles.freeShipping}>FREE</span>
                     ) : (
-                      `$${shippingCost.toFixed(2)}`
+                      `€${shippingCost.toFixed(2)}`
                     )}
                   </td>
                 </tr>
-                {discount > 0 && (
-                  <tr>
-                    <td>Discount:</td>
-                    <td className={styles.discount}>-${discount.toFixed(2)}</td>
-                  </tr>
-                )}
+                <tr>
+                  <td>Tax:</td>
+                  <td>€{tax.toFixed(2)}</td>
+                </tr>
                 <tr className={styles.totalRow}>
                   <td>Total:</td>
-                  <td>${(subtotal + shippingCost - discount).toFixed(2)}</td>
+                  <td>€{(subtotal + shippingCost + tax).toFixed(2)}</td>
                 </tr>
               </tbody>
             </table>
@@ -614,7 +641,9 @@ const OrderPage = () => {
                 !shippingInfo.address || 
                 !shippingInfo.city || 
                 !shippingInfo.state || 
-                !shippingInfo.zip
+                !shippingInfo.zip ||
+                !shippingInfo.phone ||
+                !shippingInfo.email
               )) ||
               (activeStep === 'payment' && paymentMethod === 'credit' && (
                 !cardDetails.number || 
