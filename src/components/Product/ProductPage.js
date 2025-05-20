@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { doc, getDoc, setDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../../lib/firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import styles from "./ProductPage.module.css";
 import LoginModal from "../Modal/LoginModal";
+import Image from "next/image";
 
 const ProductPage = () => {
   const router = useRouter();
@@ -24,8 +25,8 @@ const ProductPage = () => {
   const [cartMessage, setCartMessage] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [quoteForm, setQuoteForm] = useState({
-    name: user?.displayName || "",
-    email: user?.email || "",
+    name: "",
+    email: "",
     phone: "",
     message: ""
   });
@@ -150,7 +151,7 @@ const ProductPage = () => {
         setCurrentImageIndex(0);
       }
     }
-  }, [selectedColor]);
+  }, [selectedColor, product]);
 
   // Handlers
   const increaseQuantity = () => setQuantity((prev) => prev + 1);
@@ -238,7 +239,7 @@ const ProductPage = () => {
       setShowLoginModal(true);
       return;
     }
-    router.push(`/customize/${product.id}?color=${selectedColor}`);
+    router.push(`/product/customize/${product.id}?color=${selectedColor}`);
   };
 
   const handleQuoteSubmit = async (e) => {
@@ -369,10 +370,13 @@ const ProductPage = () => {
                 <span className={styles.heartIcon}>🤍</span>
               )}
             </button>
-            <img
+            <Image
               src={product.images[currentImageIndex]}
               alt={`Product view ${currentImageIndex + 1}`}
               className={styles.mainImage}
+              width={600}
+              height={600}
+              priority
             />
             <button
               className={styles.navButtonLeft}
@@ -404,7 +408,12 @@ const ProductPage = () => {
                 role="button"
                 aria-label={`View image ${index + 1}`}
               >
-                <img src={image} alt={`Thumbnail ${index + 1}`} />
+                <Image 
+                  src={image} 
+                  alt={`Thumbnail ${index + 1}`} 
+                  width={80} 
+                  height={80}
+                />
               </div>
             ))}
           </div>
@@ -427,7 +436,7 @@ const ProductPage = () => {
           <div className={styles.priceSection}>
             <div className={styles.priceWrapper}>
               <span className={styles.bulkPrice}>
-                ${product.price.toFixed(2)} {product.currency}
+                {product.price.toFixed(2)} {product.currency}
               </span>
               <span className={styles.priceNote}>
                 (Bulk discount: 1000+ units)
@@ -465,7 +474,9 @@ const ProductPage = () => {
                     aria-label={`Select color ${color.name}`}
                     style={{ backgroundColor: `#${color.hex}` }}
                   >
-                    {color.hex === selectedColor ? "✓" : ""}
+                    {color.hex === selectedColor && (
+                      <span className={styles.colorCheck}>✓</span>
+                    )}
                   </button>
                 ))}
               </div>

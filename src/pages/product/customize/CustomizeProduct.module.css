@@ -1,0 +1,615 @@
+/* CustomizeProduct.module.css */
+.customizePage {
+  --primary-color: #1F6DAD;
+  --secondary-color: #FA5C59;
+  --accent-color: #FFD166;
+  --dark-color: #333333;
+  --light-color: #F8F9FA;
+  --gray-color: #6C757D;
+  --light-gray: #E9ECEF;
+  --white: #FFFFFF;
+  --success-color: #28a745;
+  --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --transition: all 0.3s ease;
+
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: var(--dark-color);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--light-gray);
+}
+
+.header h1 {
+  font-size: 2rem;
+  color: var(--dark-color);
+  margin: 0;
+  font-weight: 600;
+}
+
+.backButton {
+  padding: 0.8rem 1.5rem;
+  background-color: var(--light-gray);
+  color: var(--dark-color);
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: var(--transition);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.backButton:hover {
+  background-color: var(--gray-color);
+  color: var(--white);
+}
+
+.customizeContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+}
+
+.productPreview {
+  background-color: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--box-shadow);
+  padding: 2rem;
+  position: relative;
+  height: fit-content;
+}
+
+.previewImageContainer {
+  position: relative;
+  aspect-ratio: 1/1;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: var(--light-gray);
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.previewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: repeating-conic-gradient(#f5f5f5 0% 25%, #e0e0e0 0% 50%) 50% / 20px 20px;
+}
+
+.viewControls {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.viewButton {
+  padding: 0.6rem 1.2rem;
+  background-color: var(--light-gray);
+  color: var(--dark-color);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+  min-width: 80px;
+}
+
+.viewButton:hover {
+  background-color: var(--gray-color);
+  color: var(--white);
+}
+
+.viewButton.active {
+  background-color: var(--primary-color);
+  color: var(--white);
+}
+
+.customizationPanel {
+  background-color: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--box-shadow);
+  padding: 2rem;
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.productInfo h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  color: var(--dark-color);
+}
+
+.priceContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.salePrice {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--secondary-color);
+}
+
+.originalPrice {
+  font-size: 1.2rem;
+  text-decoration: line-through;
+  color: var(--gray-color);
+}
+
+.price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.description {
+  color: var(--gray-color);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.sizeSelection h3,
+.currentColorInfo h3,
+.customizationOptions h3 {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+  color: var(--dark-color);
+}
+
+.sizeOptions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.sizeButton {
+  padding: 0.6rem 1.2rem;
+  background-color: var(--light-gray);
+  color: var(--dark-color);
+  border: 2px solid transparent;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+  min-width: 50px;
+  text-align: center;
+}
+
+.sizeButton:hover {
+  border-color: var(--primary-color);
+}
+
+.sizeButton.selected {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border-color: var(--primary-color);
+}
+
+.currentColorInfo {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--light-gray);
+}
+
+.colorDisplay {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.colorSwatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--light-gray);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: var(--transition);
+}
+
+.colorSelection {
+  margin-bottom: 1.5rem;
+}
+
+.colorSwatches {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.colorSwatchButton {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.colorSwatchButton.selected {
+  box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+.colorSwatchButton:hover .colorSwatch {
+  transform: scale(1.1);
+}
+
+.designItems {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.designItem {
+  padding: 1rem;
+  background-color: var(--light-gray);
+  border-radius: 8px;
+}
+
+.designItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.designItemHeader h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--dark-color);
+  text-transform: capitalize;
+}
+
+.changeDesignButton {
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.changeDesignButton:hover {
+  background-color: #1a5d95;
+}
+
+.currentSelection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.currentDesignImage {
+  border-radius: 4px;
+  border: 1px solid var(--light-gray);
+}
+
+.currentColorSwatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  border: 1px solid var(--light-gray);
+}
+
+.noCustomization {
+  color: var(--gray-color);
+  font-style: italic;
+  margin: 0;
+}
+
+.actionButtons {
+  margin-top: 1rem;
+}
+
+.addToCartButton {
+  width: 100%;
+  padding: 1rem;
+  background-color: var(--secondary-color);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.addToCartButton:hover:not(:disabled) {
+  background-color: #e04a47;
+}
+
+.addToCartButton:disabled {
+  background-color: var(--gray-color);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Design Selection Panel */
+.designSelectionPanel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.98);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.designSelectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--light-gray);
+}
+
+.designSelectionHeader h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  text-transform: capitalize;
+}
+
+.closePanelButton {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: var(--gray-color);
+  transition: var(--transition);
+  line-height: 1;
+  padding: 0.5rem;
+}
+
+.closePanelButton:hover {
+  color: var(--secondary-color);
+}
+
+.designVariations {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.designOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 2px solid transparent;
+  background-color: var(--light-gray);
+}
+
+.designOption:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.designOption.selected {
+  border-color: var(--secondary-color);
+  background-color: rgba(250, 92, 89, 0.1);
+}
+
+.designOptionImage {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  aspect-ratio: 1/1;
+  object-fit: contain;
+  background-color: var(--white);
+  border: 1px solid var(--light-gray);
+}
+
+.designOptionLabel {
+  font-size: 0.9rem;
+  color: var(--dark-color);
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Design preview positions */
+.designPreview {
+  position: absolute;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Loading and Error States */
+.loading,
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.5rem;
+}
+
+.loading {
+  color: var(--primary-color);
+}
+
+.error {
+  color: var(--secondary-color);
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+  .customizeContainer {
+    grid-template-columns: 1fr;
+  }
+  
+  .customizationPanel {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .customizePage {
+    padding: 1rem;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .designVariations {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .productPreview {
+    padding: 1rem;
+  }
+
+  .customizationPanel {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .viewControls {
+    gap: 0.5rem;
+  }
+
+  .viewButton {
+    min-width: 60px;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .designVariations {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1rem;
+  }
+
+  .designOption {
+    padding: 0.8rem;
+  }
+}
+
+/* Add these to your existing CSS */
+
+.accentTabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--light-gray);
+  padding-bottom: 0.5rem;
+}
+
+.accentTab {
+  padding: 0.6rem 1rem;
+  background-color: var(--light-gray);
+  color: var(--dark-color);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.accentTab:hover {
+  background-color: var(--gray-color);
+  color: var(--white);
+}
+
+.accentTab.active {
+  background-color: var(--primary-color);
+  color: var(--white);
+}
+
+.designVariationsContainer {
+  margin-top: 1rem;
+}
+
+.designVariationsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.designOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 2px solid transparent;
+  background-color: var(--light-gray);
+  width: 50px;
+  height: 50px;
+  justify-content: center;
+}
+
+.designOption:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.designOption.selected {
+  border-color: var(--secondary-color);
+  background-color: rgba(250, 92, 89, 0.1);
+}
+
+.designOptionImage {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  aspect-ratio: 1/1;
+  object-fit: contain;
+  background-color: var(--white);
+  border: 1px solid var(--light-gray);
+}
+
+.designOptionLabel {
+  font-size: 0.8rem;
+  color: var(--dark-color);
+  text-align: center;
+  font-weight: 500;
+}

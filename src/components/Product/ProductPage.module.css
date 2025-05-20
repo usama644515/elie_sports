@@ -1,4 +1,4 @@
-/* Main layout and variables */
+/* Product Page Styles */
 .productPage {
   --primary-color: #1F6DAD;
   --secondary-color: #FA5C59;
@@ -29,6 +29,7 @@
   padding: 2.5rem;
   position: relative;
   overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .productContainer::before {
@@ -55,6 +56,11 @@
   border-radius: 12px;
   background: var(--light-gray);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: var(--transition);
+}
+
+.mainImageContainer:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .mainImage {
@@ -297,6 +303,7 @@
   font-weight: 700;
 }
 
+/* Enhanced Color Selection */
 .colorOptions {
   display: flex;
   gap: 0.8rem;
@@ -304,25 +311,34 @@
 }
 
 .colorOption {
-  padding: 0.6rem 1.2rem;
-  border: 1px solid var(--light-gray);
-  border-radius: 24px;
-  background: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid transparent;
   cursor: pointer;
-  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: var(--transition);
-  color: var(--dark-color);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 .colorOption:hover {
-  border-color: var(--gray-color);
-  transform: translateY(-2px);
+  transform: scale(1.1);
 }
 
 .colorOption.active {
-  background-color: var(--primary-color);
-  color: var(--white);
-  border-color: var(--primary-color);
+  border-color: var(--dark-color);
+  transform: scale(1.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.colorCheck {
+  color: white;
+  font-weight: bold;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+  font-size: 1.2rem;
 }
 
 .sizeHeader {
@@ -346,6 +362,7 @@
   color: var(--secondary-color);
 }
 
+/* Enhanced Size Selection */
 .sizeOptions {
   display: flex;
   gap: 0.8rem;
@@ -353,7 +370,8 @@
 }
 
 .sizeOption {
-  padding: 0.6rem 1.2rem;
+  min-width: 50px;
+  padding: 0.6rem 0.8rem;
   border: 1px solid var(--light-gray);
   border-radius: 6px;
   background: none;
@@ -361,6 +379,7 @@
   font-size: 0.9rem;
   transition: var(--transition);
   color: var(--dark-color);
+  text-align: center;
 }
 
 .sizeOption:hover {
@@ -372,6 +391,7 @@
   background-color: var(--primary-color);
   color: var(--white);
   border-color: var(--primary-color);
+  font-weight: 600;
 }
 
 .quantitySection {
@@ -412,217 +432,6 @@
   color: var(--dark-color);
 }
 
-.actionButtons {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.addToCartButton,
-.buyNowButton {
-  flex: 1;
-  padding: 1rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.addToCartButton {
-  background-color: var(--primary-color);
-  color: var(--white);
-}
-
-.addToCartButton:hover {
-  background-color: #1a5d95;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(31, 109, 173, 0.2);
-}
-
-.buyNowButton {
-  background-color: var(--secondary-color);
-  color: var(--white);
-}
-
-.buyNowButton:hover {
-  background-color: #e04a47;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(250, 92, 89, 0.2);
-}
-
-.cartIcon {
-  font-size: 1.1rem;
-}
-
-.paymentOptions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--light-gray);
-}
-
-.paymentTitle {
-  font-size: 0.85rem;
-  color: var(--gray-color);
-}
-
-.paymentIcons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.paymentIcon {
-  font-size: 1.2rem;
-  opacity: 0.7;
-}
-
-/* Description Section */
-.descriptionSection {
-  max-width: 1200px;
-  margin: 3rem auto 0;
-  background: var(--white);
-  border-radius: 16px;
-  box-shadow: var(--box-shadow);
-  overflow: hidden;
-}
-
-.descriptionContainer {
-  padding: 2rem;
-}
-
-.descriptionTabs {
-  display: flex;
-  border-bottom: 1px solid var(--light-gray);
-  margin-bottom: 1.5rem;
-}
-
-.tabButton {
-  padding: 0.8rem 1.5rem;
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  font-weight: 600;
-  color: var(--gray-color);
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.tabButton:hover {
-  color: var(--primary-color);
-}
-
-.activeTab {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
-}
-
-.descriptionContent {
-  padding: 0 0.5rem;
-}
-
-.descriptionTitle {
-  font-size: 1.3rem;
-  color: var(--dark-color);
-  margin-bottom: 1.2rem;
-  font-weight: 700;
-}
-
-.descriptionText {
-  color: var(--gray-color);
-  line-height: 1.8;
-  margin-bottom: 2rem;
-}
-
-.featuresSection {
-  margin-top: 2rem;
-}
-
-.featuresTitle {
-  font-size: 1.1rem;
-  color: var(--dark-color);
-  margin-bottom: 1rem;
-  font-weight: 600;
-}
-
-.featuresList {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
-}
-
-.featureItem {
-  color: var(--gray-color);
-  line-height: 1.6;
-  padding: 0.5rem 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-}
-
-.checkIcon {
-  color: var(--primary-color);
-  font-weight: bold;
-}
-
-/* Responsive Styles */
-@media (max-width: 992px) {
-  .productContainer {
-    gap: 2rem;
-    padding: 2rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .productContainer {
-    grid-template-columns: 1fr;
-    padding: 1.5rem;
-  }
-  
-  .productTitle {
-    font-size: 1.5rem;
-  }
-  
-  .bulkPrice {
-    font-size: 1.5rem;
-  }
-  
-  .actionButtons {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 576px) {
-  .productContainer {
-    padding: 1rem;
-  }
-  
-  .descriptionContainer {
-    padding: 1rem;
-  }
-  
-  .tabButton {
-    padding: 0.6rem 1rem;
-    font-size: 0.9rem;
-  }
-  
-  .featuresList {
-    grid-template-columns: 1fr;
-  }
-}
-
-
-/* Add these to your existing CSS */
-
 .cartMessage {
   padding: 0.8rem;
   background-color: rgba(31, 109, 173, 0.1);
@@ -633,241 +442,7 @@
   animation: fadeIn 0.3s ease;
 }
 
-.customizeButton {
-  width: 100%;
-  padding: 1rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-  background-color: var(--accent-color);
-  color: var(--dark-color);
-}
-
-.customizeButton:hover {
-  background-color: #ffc233;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 209, 102, 0.2);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Add these to your existing CSS */
-
-.quoteButton {
-  flex: 1;
-  padding: 1rem;
-  border: 2px solid var(--primary-color);
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-  background-color: transparent;
-  color: var(--primary-color);
-  margin-top: 1rem;
-}
-
-.quoteButton:hover {
-  background-color: rgba(31, 109, 173, 0.1);
-  transform: translateY(-2px);
-}
-
-.quoteForm {
-  margin-top: 1.5rem;
-  padding: 1.5rem;
-  background-color: rgba(248, 249, 250, 0.8);
-  border-radius: 8px;
-  border: 1px solid var(--light-gray);
-}
-
-.quoteForm h3 {
-  margin-bottom: 1rem;
-  color: var(--primary-color);
-  font-size: 1.2rem;
-}
-
-.formGroup {
-  margin-bottom: 1rem;
-}
-
-.formGroup label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--dark-color);
-  font-weight: 500;
-}
-
-.formGroup input,
-.formGroup textarea {
-  width: 100%;
-  padding: 0.8rem;
-  border: 1px solid var(--light-gray);
-  border-radius: 6px;
-  font-size: 0.95rem;
-  transition: var(--transition);
-}
-
-.formGroup input:focus,
-.formGroup textarea:focus {
-  border-color: var(--primary-color);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(31, 109, 173, 0.2);
-}
-
-.formGroup textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-.submitButton {
-  width: 100%;
-  padding: 1rem;
-  background-color: var(--primary-color);
-  color: var(--white);
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.submitButton:hover {
-  background-color: #1a5d95;
-  transform: translateY(-2px);
-}
-
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-size: 1.2rem;
-  color: var(--primary-color);
-}
-
-.error {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-size: 1.2rem;
-  color: var(--secondary-color);
-}
-
-
-/* Add these to your existing CSS */
-
-.productContainer {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  background: var(--white);
-  border-radius: 16px;
-  box-shadow: var(--box-shadow);
-  padding: 2.5rem;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.productContainer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-}
-
-/* Enhanced image gallery */
-.mainImageContainer {
-  position: relative;
-  aspect-ratio: 1/1;
-  overflow: hidden;
-  border-radius: 12px;
-  background: var(--light-gray);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: var(--transition);
-}
-
-.mainImageContainer:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-/* Enhanced color selection */
-.colorOptions {
-  display: flex;
-  gap: 0.8rem;
-  flex-wrap: wrap;
-}
-
-.colorOption {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.colorOption:hover {
-  transform: scale(1.1);
-}
-
-.colorOption.active {
-  border-color: var(--dark-color);
-  transform: scale(1.1);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Enhanced size selection */
-.sizeOptions {
-  display: flex;
-  gap: 0.8rem;
-  flex-wrap: wrap;
-}
-
-.sizeOption {
-  min-width: 50px;
-  padding: 0.6rem 0.8rem;
-  border: 1px solid var(--light-gray);
-  border-radius: 6px;
-  background: none;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: var(--transition);
-  color: var(--dark-color);
-  text-align: center;
-}
-
-.sizeOption:hover {
-  border-color: var(--gray-color);
-  transform: translateY(-2px);
-}
-
-.sizeOption.selectedSize {
-  background-color: var(--primary-color);
-  color: var(--white);
-  border-color: var(--primary-color);
-  font-weight: 600;
-}
-
-/* Enhanced action buttons */
+/* Enhanced Action Buttons */
 .actionButtons {
   display: flex;
   gap: 1rem;
@@ -926,7 +501,35 @@
   box-shadow: 0 4px 12px rgba(255, 209, 102, 0.2);
 }
 
-/* Enhanced quote form */
+.cartIcon {
+  font-size: 1.1rem;
+}
+
+.paymentOptions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--light-gray);
+}
+
+.paymentTitle {
+  font-size: 0.85rem;
+  color: var(--gray-color);
+}
+
+.paymentIcons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.paymentIcon {
+  font-size: 1.2rem;
+  opacity: 0.7;
+}
+
+/* Enhanced Quote Form */
 .quoteForm {
   margin-top: 2rem;
   padding: 1.5rem;
@@ -1024,25 +627,167 @@
   box-shadow: 0 4px 12px rgba(31, 109, 173, 0.2);
 }
 
-/* Responsive adjustments */
+/* Description Section */
+.descriptionSection {
+  max-width: 1200px;
+  margin: 3rem auto 0;
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+}
+
+.descriptionContainer {
+  padding: 2rem;
+}
+
+.descriptionTabs {
+  display: flex;
+  border-bottom: 1px solid var(--light-gray);
+  margin-bottom: 1.5rem;
+}
+
+.tabButton {
+  padding: 0.8rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-weight: 600;
+  color: var(--gray-color);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.tabButton:hover {
+  color: var(--primary-color);
+}
+
+.activeTab {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.descriptionContent {
+  padding: 0 0.5rem;
+}
+
+.descriptionTitle {
+  font-size: 1.3rem;
+  color: var(--dark-color);
+  margin-bottom: 1.2rem;
+  font-weight: 700;
+}
+
+.descriptionText {
+  color: var(--gray-color);
+  line-height: 1.8;
+  margin-bottom: 2rem;
+}
+
+.featuresSection {
+  margin-top: 2rem;
+}
+
+.featuresTitle {
+  font-size: 1.1rem;
+  color: var(--dark-color);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.featuresList {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.featureItem {
+  color: var(--gray-color);
+  line-height: 1.6;
+  padding: 0.5rem 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.checkIcon {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Loading and Error States */
+.loading,
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.5rem;
+}
+
+.loading {
+  color: var(--primary-color);
+}
+
+.error {
+  color: var(--secondary-color);
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+  .productContainer {
+    gap: 2rem;
+    padding: 2rem;
+  }
+}
+
 @media (max-width: 768px) {
   .productContainer {
     grid-template-columns: 1fr;
     padding: 1.5rem;
   }
   
-  .formRow {
-    flex-direction: column;
-    gap: 0;
+  .productTitle {
+    font-size: 1.5rem;
+  }
+  
+  .bulkPrice {
+    font-size: 1.5rem;
   }
   
   .actionButtons {
     flex-direction: column;
   }
   
-  .addToCartButton,
-  .buyNowButton,
-  .customizeButton {
-    width: 100%;
+  .formRow {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .productContainer {
+    padding: 1rem;
+  }
+  
+  .descriptionContainer {
+    padding: 1rem;
+  }
+  
+  .tabButton {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .featuresList {
+    grid-template-columns: 1fr;
   }
 }

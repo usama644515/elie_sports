@@ -1,0 +1,230 @@
+{
+    "tax": 5,
+    "swatches": [
+        {
+            "color": "007680",
+            
+            "accents": [
+                {
+                    "variations": [
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747308953055.png?alt=media&token=70d8a7c8-6b62-404a-934b-d661e2e97352",
+                            "color": "007680"
+                        },
+                        {
+                            "color": "000000",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747308984386.png?alt=media&token=559897f5-7063-4c51-9ef8-2f7a9419f662"
+                        },
+                        {
+                            "color": "0070B8",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747309043765.png?alt=media&token=ab036e68-1537-4957-8290-cd05d07d9549"
+                        },
+                        {
+                            "color": "FED926",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747321983591.png?alt=media&token=566ef9a9-cc7a-4c0c-ac00-08c522562ac8"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322300598.png?alt=media&token=d0bc7141-e7d4-49ef-8dd7-bdecb0d3f709",
+                            "color": "00984D"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322571512.png?alt=media&token=2183d3fa-c8f8-4661-89ad-e0a0e65dd6f2",
+                            "color": "8DD8F8"
+                        },
+                        {
+                            "color": "532C6D",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322756602.png?alt=media&token=88f046a9-f32f-49b6-99c3-823c1da9b2e0"
+                        },
+                        {
+                            "color": "ED4F9C",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323235846.png?alt=media&token=2ddce7f1-22f8-463f-90ef-b20023095cc5"
+                        },
+                        {
+                            "color": "EA1D2E",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323375167.png?alt=media&token=4ece4b4a-70ce-4a74-8b53-f18f3e217154"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323522508.png?alt=media&token=b7705fb4-4bfb-4ff1-9f77-977a73ba3549",
+                            "color": "A8A9AD"
+                        },
+                        {
+                            "color": "ffffff",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323698156.png?alt=media&token=74935431-e2ba-424b-9e0b-a3d7438a6001"
+                        }
+                    ],
+                    "name": "Sleeves-Front"
+                },
+                {
+                    "variations": [
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747309097751.png?alt=media&token=3e3420bf-2ea8-4439-a7ad-2dc28c381e0e",
+                            "color": "007680"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747309121078.png?alt=media&token=1dd94d93-35b4-4057-8503-a3e05871e0f5",
+                            "color": "000000"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747309140285.png?alt=media&token=3a082ce7-db16-4983-b8c1-fcc1f1b13a6e",
+                            "color": "0070b8"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747321947444.png?alt=media&token=a946ee41-ffde-43d8-8001-389341c8a7ea",
+                            "color": "FED926"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322323577.png?alt=media&token=3134e99f-2db4-493f-8446-347b0be2844f",
+                            "color": "00984D"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322593113.png?alt=media&token=87d82e9b-80c3-41b3-94c1-7e6314524810",
+                            "color": "8DD8F8"
+                        },
+                        {
+                            "color": "532C6D",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322783179.png?alt=media&token=878b75e0-294f-4459-9dce-18f3d9b5f525"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323265964.png?alt=media&token=91b226dc-d7cd-48a8-995c-b17bd07fc3f3",
+                            "color": "ED4F9C"
+                        },
+                        {
+                            "color": "EA1D2E",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323393549.png?alt=media&token=eecb172c-76db-4292-a42b-2d87fc12a171"
+                        },
+                        {
+                            "color": "A8A9AD",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323547475.png?alt=media&token=665973ab-100b-4b90-9229-ba83e6c56c7b"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323715879.png?alt=media&token=cf70103e-cae3-4a08-bb34-0ff2a2dab11c",
+                            "color": "ffffff"
+                        }
+                    ],
+                    "name": "Sleeves-Back"
+                },
+                {
+                    "variations": [
+                        {
+                            "color": "007680",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747309213210.png?alt=media&token=f87bdbfc-ad02-4c78-92c4-3fc91f11d275"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747309229789.png?alt=media&token=1a15e10d-2f15-4f25-8b16-26430f770b43",
+                            "color": "000000"
+                        },
+                        {
+                            "color": "0070b8",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747309252961.png?alt=media&token=f119e057-3fb0-4063-8be5-fe607ed7bbb3"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322018803.png?alt=media&token=0bd99060-92bf-446c-8da6-aec398522f6b",
+                            "color": "FED926"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322377074.png?alt=media&token=9cc6cc7e-1817-4afd-a782-104d625200dd",
+                            "color": "00984D"
+                        },
+                        {
+                            "color": "8DD8F8",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322629857.png?alt=media&token=74bf0752-1d24-4bb7-9768-915d4366aec5"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322817166.png?alt=media&token=c87a0736-e324-428c-bfed-e779df64e6cd",
+                            "color": "532C6D"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323291057.png?alt=media&token=a28ce5a7-04f6-4cd1-8538-cbfd994ea2f7",
+                            "color": "ED4F9C"
+                        },
+                        {
+                            "color": "EA1D2E",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323417448.png?alt=media&token=758faada-c285-46dc-997a-a4a0a2db50c8"
+                        },
+                        {
+                            "color": "A8A9AD",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323643678.png?alt=media&token=356c1ef9-888e-4442-b1f7-2ebb1b4240e4"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323740000.png?alt=media&token=6e6579d3-2e63-44ca-85a5-178477ad3a01",
+                            "color": "ffffff"
+                        }
+                    ],
+                    "name": "Sleeves-Right"
+                },
+                {
+                    "variations": [
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747309299989.png?alt=media&token=328a36e1-a6bc-4490-b515-ecfcc164d131",
+                            "color": "007680"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747309324293.png?alt=media&token=96b4d0ca-437a-4253-838d-5bf1cd45c3de",
+                            "color": "000000"
+                        },
+                        {
+                            "color": "0070b8",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747309348634.png?alt=media&token=5eb5484a-9a6c-437a-9ba0-816735acf8c8"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322042682.png?alt=media&token=0b4ad500-4c8e-4c59-b218-59cbe16c801a",
+                            "color": "FED926"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322465865.png?alt=media&token=44558628-9d06-4889-814c-f997fe448565",
+                            "color": "00984D"
+                        },
+                        {
+                            "color": "8DD8F8",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322652815.png?alt=media&token=31cc4cef-fd61-4d57-a674-898a076022ca"
+                        },
+                        {
+                            "color": "532C6D",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747322850676.png?alt=media&token=9ef35453-56ef-40a0-9cd2-4b3403be152f"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323330789.png?alt=media&token=257eda70-beca-45ac-a4fa-b530f6834f4f",
+                            "color": "ED4F9C"
+                        },
+                        {
+                            "color": "EA1D2E",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323456086.png?alt=media&token=6d6e8d78-85fc-4aa5-8a28-a117c9ea22ad"
+                        },
+                        {
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323663574.png?alt=media&token=db7a851d-7f38-482d-b6ac-5adcab1ddb56",
+                            "color": "A8A9AD"
+                        },
+                        {
+                            "color": "ffffff",
+                            "image": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747323763585.png?alt=media&token=74ae011d-1aad-427b-8ca7-5333b9c3b765"
+                        }
+                    ],
+                    "name": "Sleeves-Left"
+                }
+            ],
+            "sizes": [
+                "S",
+                "M",
+                "L",
+                "XL"
+            ],
+            "images": {
+                "back": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747308845067.png?alt=media&token=0e637b2b-f8a7-4409-ad8b-e4c22f0bcdc9",
+                "left": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747308860669.png?alt=media&token=b6553fb4-bcd2-4b74-bf9c-974bb2877eda",
+                "front": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747308835665.png?alt=media&token=c48dc69b-5b37-40e7-af68-54858d05ffd4",
+                "right": "https://firebasestorage.googleapis.com/v0/b/eliesports.firebasestorage.app/o/swatch_images%2F1747308854044.png?alt=media&token=14221903-28da-4414-83ee-242e01f746d8"
+            }
+        }
+    ],
+    "totalPrice": 30,
+    "currency": "EUR",
+    "salePrice": 25,
+    "description": "Round Neck T-Shirt Description...",
+    "deliveryTime": "7",
+    "name": "Round Neck T-Shirt",
+    "subCategory": "Shirts",
+    "shipmentCost": 3,
+    "category": "Football",
+    "sku": "001",
+    "id": "w05R5HT4EUhCpmCdJtze"
+}
