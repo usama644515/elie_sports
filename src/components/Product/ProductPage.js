@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { doc, getDoc, setDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../../lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import styles from "./ProductPage.module.css";
 import LoginModal from "../Modal/LoginModal";
-import Image from "next/image";
 
 const ProductPage = () => {
   const router = useRouter();
@@ -25,8 +24,8 @@ const ProductPage = () => {
   const [cartMessage, setCartMessage] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [quoteForm, setQuoteForm] = useState({
-    name: "",
-    email: "",
+    name: user?.displayName || "",
+    email: user?.email || "",
     phone: "",
     message: ""
   });
@@ -151,7 +150,7 @@ const ProductPage = () => {
         setCurrentImageIndex(0);
       }
     }
-  }, [selectedColor, product]);
+  }, [selectedColor]);
 
   // Handlers
   const increaseQuantity = () => setQuantity((prev) => prev + 1);
@@ -370,13 +369,10 @@ const ProductPage = () => {
                 <span className={styles.heartIcon}>🤍</span>
               )}
             </button>
-            <Image
+            <img
               src={product.images[currentImageIndex]}
               alt={`Product view ${currentImageIndex + 1}`}
               className={styles.mainImage}
-              width={600}
-              height={600}
-              priority
             />
             <button
               className={styles.navButtonLeft}
@@ -408,12 +404,7 @@ const ProductPage = () => {
                 role="button"
                 aria-label={`View image ${index + 1}`}
               >
-                <Image 
-                  src={image} 
-                  alt={`Thumbnail ${index + 1}`} 
-                  width={80} 
-                  height={80}
-                />
+                <img src={image} alt={`Thumbnail ${index + 1}`} />
               </div>
             ))}
           </div>
@@ -436,14 +427,14 @@ const ProductPage = () => {
           <div className={styles.priceSection}>
             <div className={styles.priceWrapper}>
               <span className={styles.bulkPrice}>
-                {product.price.toFixed(2)} {product.currency}
+                €{product.price.toFixed(2)}
               </span>
               <span className={styles.priceNote}>
                 (Bulk discount: 1000+ units)
               </span>
             </div>
             <div className={styles.minQuantity}>
-              Minimum Order: <span>{product.minQuantity} Piece</span> ($
+              Minimum Order: <span>{product.minQuantity} Piece</span> (€
               {product.minPrice.toFixed(2)}/unit)
             </div>
           </div>
@@ -451,7 +442,7 @@ const ProductPage = () => {
           <div className={styles.deliveryInfo}>
             <div className={styles.deliveryBadge}>
               <span className={styles.truckIcon}>🚚</span>
-              <span>Free shipping on orders over $50</span>
+              <span>Free shipping on orders over €50</span>
             </div>
             <div className={styles.deliveryEstimate}>
               <strong>Estimated Delivery:</strong> {product.deliveryEstimate}
@@ -474,9 +465,7 @@ const ProductPage = () => {
                     aria-label={`Select color ${color.name}`}
                     style={{ backgroundColor: `#${color.hex}` }}
                   >
-                    {color.hex === selectedColor && (
-                      <span className={styles.colorCheck}>✓</span>
-                    )}
+                    {color.hex === selectedColor ? "✓" : ""}
                   </button>
                 ))}
               </div>
