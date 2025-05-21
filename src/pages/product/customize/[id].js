@@ -1,11 +1,13 @@
+/* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import styles from "./CustomizeProduct.module.css";
 import Image from "next/image";
 import Link from "next/link";
+import LoginModal from "../../../components/Modal/LoginModal";
 
 const CustomizeProduct = () => {
   const router = useRouter();
@@ -18,12 +20,12 @@ const CustomizeProduct = () => {
   const [selectedSwatch, setSelectedSwatch] = useState(null);
   const [selectedDesigns, setSelectedDesigns] = useState({});
   const [currentView, setCurrentView] = useState("front");
-  const [showDesignPanel, setShowDesignPanel] = useState(false);
-  const [currentDesignItem, setCurrentDesignItem] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [allSwatches, setAllSwatches] = useState([]);
-  const [baseProductColor, setBaseProductColor] = useState(null);
   const [activeAccentTab, setActiveAccentTab] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [cartMessage, setCartMessage] = useState("");
 
   // Check auth state
   useEffect(() => {
@@ -54,7 +56,6 @@ const CustomizeProduct = () => {
             
             if (selectedSwatch) {
               setSelectedSwatch(selectedSwatch);
-              setBaseProductColor(selectedSwatch.color);
               
               // Initialize selected designs with first variation for each design item
               const initialDesigns = {};
@@ -80,6 +81,7 @@ const CustomizeProduct = () => {
               ...productData,
               id: docSnap.id,
               title: productData.name,
+              price: productData.salePrice || productData.totalPrice,
               swatches
             });
           } else {
@@ -98,7 +100,6 @@ const CustomizeProduct = () => {
 
   const handleSwatchSelect = (swatch) => {
     setSelectedSwatch(swatch);
-    setBaseProductColor(swatch.color);
     // Reset designs when changing color
     const initialDesigns = {};
     if (swatch.accents) {
@@ -125,12 +126,6 @@ const CustomizeProduct = () => {
       ...prev,
       [designItem.name]: variation
     }));
-    setShowDesignPanel(false);
-  };
-
-  const openDesignPanel = (designItem) => {
-    setCurrentDesignItem(designItem);
-    setShowDesignPanel(true);
   };
 
   const getCurrentImage = () => {
@@ -150,26 +145,69 @@ const CustomizeProduct = () => {
     }
   };
 
-  const handleAddToCart = () => {
-    if (!selectedSize) {
-      alert("Please select a size");
+  const increaseQuantity = () => setQuantity((prev) => prev + 1);
+  const decreaseQuantity = () =>
+    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+  const handleAddToCart = async () => {
+    if (!user) {
+      setShowLoginModal(true);
       return;
     }
 
-    const customizedProduct = {
-      productId: product.id,
-      productName: product.name,
-      color: selectedSwatch.color,
-      size: selectedSize,
-      designs: selectedDesigns,
-      price: product.salePrice || product.totalPrice,
-      image: selectedSwatch.images?.front,
-      quantity: 1
-    };
+    if (!selectedSize) {
+      setCartMessage("Please select a size before adding to cart");
+      setTimeout(() => setCartMessage(""), 3000);
+      return;
+    }
 
-    console.log("Adding to cart:", customizedProduct);
-    // Here you would typically add to cart using your state management or API
-    alert("Customized product added to cart!");
+    try {
+      const cartItem = {
+        productId: product.id,
+        name: product.title,
+        price: product.price,
+        color: selectedSwatch.color,
+        size: selectedSize,
+        quantity,
+        image: selectedSwatch.images?.front || "/images/product.jpg",
+        createdAt: serverTimestamp(),
+        userId: user.uid,
+        status: "active",
+        isCustomized: true,
+        designs: selectedDesigns,
+        customizationImages: Object.values(selectedDesigns).reduce((acc, design) => {
+          if (design.image) {
+            acc[design.position || 'front'] = design.image;
+          }
+          return acc;
+        }, {})
+      };
+
+      // Generate a unique ID for the cart item
+      const cartItemId = `${user.uid}_${product.id}_${selectedSwatch.color}_${selectedSize}_${Object.keys(selectedDesigns).sort().join('_')}`;
+      const cartItemRef = doc(db, "Cart", cartItemId);
+
+      // Check if item already exists in cart
+      const existingItem = await getDoc(cartItemRef);
+      
+      if (existingItem.exists()) {
+        // Update quantity if item exists
+        await setDoc(cartItemRef, {
+          ...cartItem,
+          quantity: existingItem.data().quantity + quantity
+        }, { merge: true });
+      } else {
+        // Add new item to cart
+        await setDoc(cartItemRef, cartItem);
+      }
+
+      setCartMessage(`${quantity} customized ${product.title} added to cart!`);
+      setTimeout(() => setCartMessage(""), 3000);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      setCartMessage("Failed to add to cart. Please try again.");
+      setTimeout(() => setCartMessage(""), 3000);
+    }
   };
 
   const getDesignItemDisplayName = (name) => {
@@ -288,14 +326,7 @@ const CustomizeProduct = () => {
           <div className={styles.productInfo}>
             <h2>{product.title}</h2>
             <div className={styles.priceContainer}>
-              {product.salePrice ? (
-                <>
-                  <span className={styles.salePrice}>€{product.salePrice.toFixed(2)}</span>
-                  <span className={styles.originalPrice}>€{product.totalPrice.toFixed(2)}</span>
-                </>
-              ) : (
-                <span className={styles.price}>€{product.totalPrice.toFixed(2)}</span>
-              )}
+              <span className={styles.price}>€{product.price.toFixed(2)}</span>
             </div>
             <p className={styles.description}>{product.description}</p>
           </div>
@@ -322,19 +353,6 @@ const CustomizeProduct = () => {
             </div>
           </div>
 
-          {/* Current Color Info */}
-          {selectedSwatch && (
-            <div className={styles.currentColorInfo}>
-              <h3>Current Base Color</h3>
-              <div className={styles.colorDisplay}>
-                <div 
-                  className={styles.colorSwatch}
-                  style={{ backgroundColor: `#${baseProductColor}` }}
-                />
-              </div>
-            </div>
-          )}
-
           {/* Size Selection */}
           <div className={styles.sizeSelection}>
             <h3>Select Size</h3>
@@ -350,6 +368,32 @@ const CustomizeProduct = () => {
               ))}
             </div>
           </div>
+
+          {/* Quantity Selection */}
+          <div className={styles.quantitySection}>
+            <h3>Quantity</h3>
+            <div className={styles.quantityControls}>
+              <button
+                className={styles.quantityButton}
+                onClick={decreaseQuantity}
+                aria-label="Decrease quantity"
+              >
+                -
+              </button>
+              <span className={styles.quantityValue}>{quantity}</span>
+              <button
+                className={styles.quantityButton}
+                onClick={increaseQuantity}
+                aria-label="Increase quantity"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {cartMessage && (
+            <div className={styles.cartMessage}>{cartMessage}</div>
+          )}
 
           {/* Customization Options */}
           <div className={styles.customizationOptions}>
@@ -405,14 +449,12 @@ const CustomizeProduct = () => {
                         {item.variations.map((variation, index) => (
                           <div
                             key={index}
-                            style={{ backgroundColor: `#${variation.color}` }}
                             className={`${styles.designOption} ${
                               selectedDesigns[item.name]?.color === variation.color ? styles.selected : ""
                             }`}
                             onClick={() => handleDesignSelect(item, variation)}
-                          >
-                           
-                          </div>
+                            style={{ backgroundColor: `#${variation.color}` }}
+                          />
                         ))}
                       </div>
                     </div>
@@ -430,11 +472,21 @@ const CustomizeProduct = () => {
               onClick={handleAddToCart}
               disabled={!selectedSize}
             >
-              Add Customized Product to Cart - €{(product.salePrice || product.totalPrice).toFixed(2)}
+              Add Customized Product to Cart - €{(product.price * quantity).toFixed(2)}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <LoginModal 
+          onClose={() => setShowLoginModal(false)}
+          onLoginSuccess={() => {
+            setShowLoginModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };

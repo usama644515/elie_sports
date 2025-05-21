@@ -613,3 +613,41 @@
   text-align: center;
   font-weight: 500;
 }
+
+.quantitySection {
+  margin-bottom: 0.5rem;
+}
+
+.quantityControls {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.quantityButton {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--light-gray);
+  background: none;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  color: var(--dark-color);
+}
+
+.quantityButton:hover {
+  background-color: var(--light-gray);
+  transform: scale(1.1);
+}
+
+.quantityValue {
+  font-size: 1.2rem;
+  min-width: 40px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--dark-color);
+}

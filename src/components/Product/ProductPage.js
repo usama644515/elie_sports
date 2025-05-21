@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { doc, getDoc, setDoc, collection, serverTimestamp } from "firebase/firestore";

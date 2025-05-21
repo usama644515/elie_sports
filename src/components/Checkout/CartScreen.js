@@ -66,7 +66,7 @@ const CartScreen = () => {
 
           setCartItems(items);
           setSubtotal(total);
-          setShippingCost(total > 50 ? 0 : 10); // Free shipping over $50
+          setShippingCost(total > 50 ? 0 : 10); // Free shipping over €50
           setLoading(false);
         } catch (error) {
           console.error("Error fetching cart items:", error);
@@ -218,7 +218,7 @@ const CartScreen = () => {
                   </p>
 
                   <div className={styles.itemPrice}>
-                    ${item.price.toFixed(2)} {item.currency}
+                    €{item.price.toFixed(2)}
                   </div>
 
                   <div className={styles.quantityControls}>
@@ -242,7 +242,7 @@ const CartScreen = () => {
                   </div>
 
                   <div className={styles.itemTotal}>
-                    ${(item.price * item.quantity).toFixed(2)}
+                    €{(item.price * item.quantity).toFixed(2)}
                   </div>
                 </div>
               </div>
@@ -255,7 +255,7 @@ const CartScreen = () => {
 
               <div className={styles.summaryRow}>
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>€{subtotal.toFixed(2)}</span>
               </div>
 
               <div className={styles.summaryRow}>
@@ -264,7 +264,7 @@ const CartScreen = () => {
                   {shippingCost === 0 ? (
                     <span className={styles.freeShipping}>FREE</span>
                   ) : (
-                    `$${shippingCost.toFixed(2)}`
+                    `€${shippingCost.toFixed(2)}`
                   )}
                 </span>
               </div>
@@ -273,7 +273,7 @@ const CartScreen = () => {
                 <div className={styles.summaryRow}>
                   <span>Discount</span>
                   <span className={styles.discount}>
-                    -${discount.toFixed(2)}
+                    -€{discount.toFixed(2)}
                   </span>
                 </div>
               )}
@@ -302,7 +302,7 @@ const CartScreen = () => {
               <div className={styles.summaryTotal}>
                 <span>Total</span>
                 <span className={styles.totalAmount}>
-                  ${(subtotal + shippingCost - discount).toFixed(2)}
+                  €{(subtotal + shippingCost - discount).toFixed(2)}
                 </span>
               </div>
 
