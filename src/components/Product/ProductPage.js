@@ -30,6 +30,17 @@ const ProductPage = () => {
     phone: "",
     message: ""
   });
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  // Show toast notification
+  const showToastMessage = (message) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  };
 
   // Check auth state
   useEffect(() => {
@@ -175,7 +186,7 @@ const ProductPage = () => {
 
   const handleAddToCart = async () => {
     if (!user) {
-      setShowLoginModal(true);
+      showToastMessage("Please login first to add items to cart");
       return;
     }
 
@@ -236,7 +247,7 @@ const ProductPage = () => {
 
   const handleCustomize = () => {
     if (!user) {
-      setShowLoginModal(true);
+      showToastMessage("Please login first to customize products");
       return;
     }
     router.push(`/product/customize/${product.id}?color=${selectedColor}`);
@@ -352,6 +363,13 @@ const ProductPage = () => {
 
   return (
     <div className={styles.productPage}>
+      {/* Toast Notification */}
+      {showToast && (
+        <div className={styles.toastNotification}>
+          {toastMessage}
+        </div>
+      )}
+
       <div className={styles.productContainer}>
         {/* Image Gallery Section */}
         <div className={styles.imageGallery}>
@@ -535,12 +553,6 @@ const ProductPage = () => {
             >
               <span className={styles.cartIcon}>🛒</span> ADD TO CART
             </button>
-            {/* <button
-              className={styles.buyNowButton}
-              onClick={handleBuyNow}
-            >
-              BUY NOW
-            </button> */}
           </div>
 
           {/* Always visible quote form */}
@@ -664,7 +676,6 @@ const ProductPage = () => {
           onClose={() => setShowLoginModal(false)}
           onLoginSuccess={() => {
             setShowLoginModal(false);
-            // You can add any post-login actions here
           }}
         />
       )}

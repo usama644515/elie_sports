@@ -8,6 +8,51 @@ import styles from "./CustomizeProduct.module.css";
 import Image from "next/image";
 import Link from "next/link";
 import LoginModal from "../../../components/Modal/LoginModal";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Utility function to transform the product data with lowercase color codes
+const transformProductData = (product) => {
+  if (!product.swatches) return product;
+
+  const transformedSwatches = product.swatches.map(swatch => {
+    // Convert color code to lowercase
+    const lowerCaseSwatch = {
+      ...swatch,
+      color: swatch.color.toLowerCase()
+    };
+
+    if (!swatch.accents) return lowerCaseSwatch;
+
+    // Group sleeve variations by color (also lowercase)
+    const sleeveColors = {};
+
+    swatch.accents.forEach(accent => {
+      const [type, position] = accent.name.split('-');
+      
+      accent.variations.forEach(variation => {
+        const lowerColor = variation.color.toLowerCase();
+        if (!sleeveColors[lowerColor]) {
+          sleeveColors[lowerColor] = {
+            color: lowerColor,
+            positions: {}
+          };
+        }
+        sleeveColors[lowerColor].positions[position.toLowerCase()] = variation.image;
+      });
+    });
+
+    return {
+      ...lowerCaseSwatch,
+      sleeveColors: Object.values(sleeveColors)
+    };
+  });
+
+  return {
+    ...product,
+    swatches: transformedSwatches
+  };
+};
 
 const CustomizeProduct = () => {
   const router = useRouter();
@@ -18,11 +63,10 @@ const CustomizeProduct = () => {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [selectedSwatch, setSelectedSwatch] = useState(null);
-  const [selectedDesigns, setSelectedDesigns] = useState({});
+  const [selectedSleeveColor, setSelectedSleeveColor] = useState(null);
   const [currentView, setCurrentView] = useState("front");
   const [selectedSize, setSelectedSize] = useState(null);
   const [allSwatches, setAllSwatches] = useState([]);
-  const [activeAccentTab, setActiveAccentTab] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [cartMessage, setCartMessage] = useState("");
@@ -45,30 +89,24 @@ const CustomizeProduct = () => {
           const docSnap = await getDoc(docRef);
 
           if (docSnap.exists()) {
-            const productData = docSnap.data();
+            const productData = transformProductData(docSnap.data());
             const swatches = productData.swatches || [];
             setAllSwatches(swatches);
             
+            // Convert initialColor to lowercase for comparison
+            const lowerInitialColor = initialColor ? initialColor.toLowerCase() : null;
+            
             // Find the selected color swatch (use initialColor if provided, otherwise first swatch)
-            const selectedSwatch = initialColor 
-              ? swatches.find(s => s.color === initialColor) || swatches[0]
+            const selectedSwatch = lowerInitialColor 
+              ? swatches.find(s => s.color.toLowerCase() === lowerInitialColor) || swatches[0]
               : swatches[0];
             
             if (selectedSwatch) {
               setSelectedSwatch(selectedSwatch);
               
-              // Initialize selected designs with first variation for each design item
-              const initialDesigns = {};
-              if (selectedSwatch.accents) {
-                selectedSwatch.accents.forEach(item => {
-                  if (item.variations && item.variations.length > 0) {
-                    initialDesigns[item.name] = item.variations[0];
-                  }
-                });
-                // Set first accent tab as active
-                if (selectedSwatch.accents.length > 0) {
-                  setActiveAccentTab(selectedSwatch.accents[0].name);
-                }
+              // Set first sleeve color as default if available
+              if (selectedSwatch.sleeveColors && selectedSwatch.sleeveColors.length > 0) {
+                setSelectedSleeveColor(selectedSwatch.sleeveColors[0]);
               }
 
               // Set first size as default
@@ -100,49 +138,41 @@ const CustomizeProduct = () => {
 
   const handleSwatchSelect = (swatch) => {
     setSelectedSwatch(swatch);
-    // Reset designs when changing color
-    const initialDesigns = {};
-    if (swatch.accents) {
-      swatch.accents.forEach(item => {
-        if (item.variations && item.variations.length > 0) {
-          initialDesigns[item.name] = item.variations[0];
-        }
-      });
-      // Set first accent tab as active
-      if (swatch.accents.length > 0) {
-        setActiveAccentTab(swatch.accents[0].name);
-      }
+    // Reset sleeve color when changing base color
+    if (swatch.sleeveColors && swatch.sleeveColors.length > 0) {
+      setSelectedSleeveColor(swatch.sleeveColors[0]);
+    } else {
+      setSelectedSleeveColor(null);
     }
-    setSelectedDesigns(initialDesigns);
-    // Update URL without reload
+    // Update URL with lowercase color
     router.replace({
       pathname: router.pathname,
-      query: { ...router.query, color: swatch.color }
+      query: { ...router.query, color: swatch.color.toLowerCase() }
     }, undefined, { shallow: true });
   };
 
-  const handleDesignSelect = (designItem, variation) => {
-    setSelectedDesigns(prev => ({
-      ...prev,
-      [designItem.name]: variation
-    }));
+  const handleSleeveColorSelect = (sleeveColor) => {
+    setSelectedSleeveColor(sleeveColor);
   };
 
   const getCurrentImage = () => {
     if (!selectedSwatch) return "/images/product.jpg";
     
-    switch (currentView) {
-      case "front":
-        return selectedSwatch.images?.front || "/images/product.jpg";
-      case "back":
-        return selectedSwatch.images?.back || "/images/product.jpg";
-      case "left":
-        return selectedSwatch.images?.left || "/images/product.jpg";
-      case "right":
-        return selectedSwatch.images?.right || "/images/product.jpg";
-      default:
-        return selectedSwatch.images?.front || "/images/product.jpg";
+    // Get base image for current view
+    const baseImage = selectedSwatch.images?.[currentView] || "/images/product.jpg";
+    
+    // If we have a sleeve color selected and it has an image for this view, overlay it
+    if (selectedSleeveColor && selectedSleeveColor.positions[currentView]) {
+      return {
+        base: baseImage,
+        overlay: selectedSleeveColor.positions[currentView]
+      };
     }
+    
+    return {
+      base: baseImage,
+      overlay: null
+    };
   };
 
   const increaseQuantity = () => setQuantity((prev) => prev + 1);
@@ -166,7 +196,7 @@ const CustomizeProduct = () => {
         productId: product.id,
         name: product.title,
         price: product.price,
-        color: selectedSwatch.color,
+        color: selectedSwatch.color.toLowerCase(), // Ensure lowercase in cart
         size: selectedSize,
         quantity,
         image: selectedSwatch.images?.front || "/images/product.jpg",
@@ -174,17 +204,12 @@ const CustomizeProduct = () => {
         userId: user.uid,
         status: "active",
         isCustomized: true,
-        designs: selectedDesigns,
-        customizationImages: Object.values(selectedDesigns).reduce((acc, design) => {
-          if (design.image) {
-            acc[design.position || 'front'] = design.image;
-          }
-          return acc;
-        }, {})
+        sleeveColor: selectedSleeveColor ? selectedSleeveColor.color.toLowerCase() : null, // Ensure lowercase
+        sleeveImages: selectedSleeveColor ? selectedSleeveColor.positions : null
       };
 
-      // Generate a unique ID for the cart item
-      const cartItemId = `${user.uid}_${product.id}_${selectedSwatch.color}_${selectedSize}_${Object.keys(selectedDesigns).sort().join('_')}`;
+      // Generate a unique ID for the cart item with lowercase colors
+      const cartItemId = `${user.uid}_${product.id}_${selectedSwatch.color.toLowerCase()}_${selectedSize}_${selectedSleeveColor?.color.toLowerCase() || 'none'}`;
       const cartItemRef = doc(db, "Cart", cartItemId);
 
       // Check if item already exists in cart
@@ -201,71 +226,45 @@ const CustomizeProduct = () => {
         await setDoc(cartItemRef, cartItem);
       }
 
-      setCartMessage(`${quantity} customized ${product.title} added to cart!`);
-      setTimeout(() => setCartMessage(""), 3000);
+      // Show toast with success message and "Go to Cart" button
+      toast.success(
+        <div>
+          <p>{quantity} customized {product.title} added to cart!</p>
+          <button 
+            onClick={() => router.push('/cart')}
+            className={styles.goToCartButton}
+          >
+            Go to Cart
+          </button>
+        </div>,
+        {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        }
+      );
     } catch (error) {
       console.error("Error adding to cart:", error);
-      setCartMessage("Failed to add to cart. Please try again.");
-      setTimeout(() => setCartMessage(""), 3000);
+      toast.error("Failed to add to cart. Please try again.", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     }
-  };
-
-  const getDesignItemDisplayName = (name) => {
-    const parts = name.split('-');
-    return parts[0].replace(/(^\w|\s\w)/g, m => m.toUpperCase()) + 
-           (parts.length > 1 ? ` (${parts[1]})` : '');
-  };
-
-  const getDesignPosition = (designName) => {
-    const parts = designName.split('-');
-    return parts.length > 1 ? parts[1].toLowerCase() : 'front';
-  };
-
-  const renderDesignPreview = () => {
-    if (!selectedSwatch || !selectedSwatch.accents) return null;
-
-    return Object.entries(selectedDesigns).map(([name, variation]) => {
-      const position = getDesignPosition(name);
-      
-      // Only show design if it matches the current view
-      if (position !== currentView) return null;
-
-      return (
-        <div 
-          key={name} 
-          className={styles.designPreview}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none'
-          }}
-        >
-          {variation.image && (
-            <Image
-              src={variation.image}
-              alt={`${name} design`}
-              width={600}
-              height={600}
-              className={styles.designImage}
-              style={{
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                objectPosition: 'center'
-              }}
-            />
-          )}
-        </div>
-      );
-    });
   };
 
   if (loading || authLoading) return <div className={styles.loading}>Loading...</div>;
   if (!product || !allSwatches.length) return <div className={styles.error}>Product not found</div>;
+
+  const currentImages = getCurrentImage();
 
   return (
     <div className={styles.customizePage}>
@@ -280,8 +279,9 @@ const CustomizeProduct = () => {
         {/* Product Preview */}
         <div className={styles.productPreview}>
           <div className={styles.previewImageContainer}>
+            {/* Base Image */}
             <Image
-              src={getCurrentImage()}
+              src={currentImages.base}
               alt={`Product ${currentView} view`}
               className={styles.previewImage}
               width={600}
@@ -289,8 +289,18 @@ const CustomizeProduct = () => {
               priority
             />
             
-            {/* Show selected designs on the preview */}
-            {renderDesignPreview()}
+            {/* Sleeve Overlay Image if exists */}
+            {currentImages.overlay && (
+              <div className={styles.sleeveOverlay}>
+                <Image
+                  src={currentImages.overlay}
+                  alt={`Sleeve ${currentView} view`}
+                  width={600}
+                  height={600}
+                  className={styles.overlayImage}
+                />
+              </div>
+            )}
           </div>
 
           <div className={styles.viewControls}>
@@ -395,76 +405,29 @@ const CustomizeProduct = () => {
             <div className={styles.cartMessage}>{cartMessage}</div>
           )}
 
-          {/* Customization Options */}
-          <div className={styles.customizationOptions}>
-            <h3>Customization Options</h3>
-            
-            {selectedSwatch?.accents?.length > 0 ? (
-              <div className={styles.designItems}>
-                {/* Accent tabs */}
-                <div className={styles.accentTabs}>
-                  {selectedSwatch.accents.map((item) => (
-                    <button
-                      key={item.name}
-                      className={`${styles.accentTab} ${
-                        activeAccentTab === item.name ? styles.active : ''
-                      }`}
-                      onClick={() => setActiveAccentTab(item.name)}
-                    >
-                      {getDesignItemDisplayName(item.name)}
-                    </button>
-                  ))}
-                </div>
-                
-                {/* Current accent variations */}
-                {selectedSwatch.accents.map((item) => {
-                  if (item.name !== activeAccentTab) return null;
-                  const currentDesign = selectedDesigns[item.name];
-                  
-                  return (
-                    <div key={item.name} className={styles.designVariationsContainer}>
-                      <div className={styles.designItemHeader}>
-                        <h4>{getDesignItemDisplayName(item.name)}</h4>
-                        {currentDesign && (
-                          <div className={styles.currentSelection}>
-                            {currentDesign?.image ? (
-                              <Image
-                                src={currentDesign.image}
-                                alt={`Selected ${item.name} design`}
-                                width={60}
-                                height={60}
-                                className={styles.currentDesignImage}
-                              />
-                            ) : (
-                              <div
-                                className={styles.currentColorSwatch}
-                                style={{ backgroundColor: `#${currentDesign?.color || 'ccc'}` }}
-                              />
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className={styles.designVariationsGrid}>
-                        {item.variations.map((variation, index) => (
-                          <div
-                            key={index}
-                            className={`${styles.designOption} ${
-                              selectedDesigns[item.name]?.color === variation.color ? styles.selected : ""
-                            }`}
-                            onClick={() => handleDesignSelect(item, variation)}
-                            style={{ backgroundColor: `#${variation.color}` }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
+          {/* Sleeve Color Selection */}
+          {selectedSwatch?.sleeveColors?.length > 0 && (
+            <div className={styles.sleeveSelection}>
+              <h3>Sleeve Color</h3>
+              <div className={styles.sleeveColorOptions}>
+                {selectedSwatch.sleeveColors.map(sleeveColor => (
+                  <button
+                    key={sleeveColor.color}
+                    className={`${styles.sleeveColorButton} ${
+                      selectedSleeveColor?.color === sleeveColor.color ? styles.selected : ''
+                    }`}
+                    onClick={() => handleSleeveColorSelect(sleeveColor)}
+                    aria-label={`Sleeve color ${sleeveColor.color}`}
+                  >
+                    <div 
+                      className={styles.sleeveColorSwatch}
+                      style={{ backgroundColor: `#${sleeveColor.color}` }}
+                    />
+                  </button>
+                ))}
               </div>
-            ) : (
-              <p className={styles.noCustomization}>No customization options available for this product.</p>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className={styles.actionButtons}>
             <button
@@ -487,6 +450,9 @@ const CustomizeProduct = () => {
           }}
         />
       )}
+
+      {/* Toast Container */}
+      <ToastContainer />
     </div>
   );
 };
