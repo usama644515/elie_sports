@@ -33,7 +33,7 @@ const ProductSection = () => {
             id: doc.id,
             brand: productData.brand || "SPORTIFY", // Default brand if not available
             name: productData.name,
-            price: `$${productData.salePrice || productData.price}`,
+            price: `€${productData.salePrice || productData.price}`,
             quantity: "(1,000+)", // Default quantity
             delivery: `${productData.deliveryTime} days delivery`,
             image: productData.swatches[0]?.images?.front || "https://static.vecteezy.com/system/resources/previews/028/047/017/non_2x/3d-check-product-free-png.png",

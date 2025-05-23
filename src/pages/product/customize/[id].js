@@ -192,23 +192,36 @@ const CustomizeProduct = () => {
     }
 
     try {
+      // Generate a composite image URL that includes both base and sleeve colors
+      const compositeImageUrl = selectedSleeveColor 
+        ? JSON.stringify({
+            base: selectedSwatch.images?.front || "/images/product.jpg",
+            sleeve: selectedSleeveColor.positions?.front || null
+          })
+        : selectedSwatch.images?.front || "/images/product.jpg";
+
       const cartItem = {
         productId: product.id,
         name: product.title,
         price: product.price,
-        color: selectedSwatch.color.toLowerCase(), // Ensure lowercase in cart
+        color: selectedSwatch.color.toLowerCase(),
         size: selectedSize,
         quantity,
-        image: selectedSwatch.images?.front || "/images/product.jpg",
+        image: selectedSleeveColor.positions?.front, // Store the composite image info
         createdAt: serverTimestamp(),
         userId: user.uid,
         status: "active",
-        isCustomized: true,
-        sleeveColor: selectedSleeveColor ? selectedSleeveColor.color.toLowerCase() : null, // Ensure lowercase
-        sleeveImages: selectedSleeveColor ? selectedSleeveColor.positions : null
+        isCustomized: true, // Flag to indicate this is a customized product
+        customizationDetails: {
+          baseColor: selectedSwatch.color.toLowerCase(),
+          sleeveColor: selectedSleeveColor ? selectedSleeveColor.color.toLowerCase() : null,
+          sleeveImages: selectedSleeveColor ? selectedSleeveColor.positions : null,
+          baseImages: selectedSwatch.images
+        },
+        originalProductId: product.id // Reference to the original product
       };
 
-      // Generate a unique ID for the cart item with lowercase colors
+      // Generate a unique ID for the cart item with all customization details
       const cartItemId = `${user.uid}_${product.id}_${selectedSwatch.color.toLowerCase()}_${selectedSize}_${selectedSleeveColor?.color.toLowerCase() || 'none'}`;
       const cartItemRef = doc(db, "Cart", cartItemId);
 
@@ -337,6 +350,9 @@ const CustomizeProduct = () => {
             <h2>{product.title}</h2>
             <div className={styles.priceContainer}>
               <span className={styles.price}>€{product.price.toFixed(2)}</span>
+              {selectedSwatch?.sleeveColors?.length > 0 && (
+                <span className={styles.customizationTag}>Customizable</span>
+              )}
             </div>
             <p className={styles.description}>{product.description}</p>
           </div>

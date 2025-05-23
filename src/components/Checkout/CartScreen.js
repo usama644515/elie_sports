@@ -198,7 +198,7 @@ const CartScreen = () => {
             {cartItems.map((item) => (
               <div key={item.id} className={styles.cartItem}>
                 <div className={styles.itemImage}>
-                  <img src={item.image} alt={item.name} />
+                  <img src={item.isCustomized? item.customizationDetails.sleeveImages.front : item.image} alt={item.name} />
                 </div>
 
                 <div className={styles.itemDetails}>

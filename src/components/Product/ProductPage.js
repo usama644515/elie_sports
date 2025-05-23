@@ -208,7 +208,8 @@ const ProductPage = () => {
         image: product.images[0],
         createdAt: serverTimestamp(),
         userId: user.uid,
-        status: "active"
+        status: "active",
+        isCustomized: false,
       };
 
       // Generate a unique ID for the cart item

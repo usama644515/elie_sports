@@ -24,7 +24,7 @@ const RecommendedProducts = () => {
             id: doc.id,
             brand: productData.brand || "SPORTIFY",
             name: productData.name,
-            price: `$${productData.salePrice || productData.price}`,
+            price: `€${productData.salePrice || productData.price}`,
             quantity: "(1,000+)",
             minPrice: `Min. Quantity: 1 ($${((productData.salePrice || productData.price) * 1.25).toFixed(2)}/item)`,
             delivery: `${productData.deliveryTime || 3} days delivery`,
