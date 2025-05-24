@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
 import { db, auth } from '../../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import styles from './MyOrdersPage.module.css';
@@ -13,6 +13,9 @@ const MyOrdersPage = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [error, setError] = useState('');
+  const [reviewText, setReviewText] = useState('');
+  const [rating, setRating] = useState(5);
+  const [reviewingOrder, setReviewingOrder] = useState(null);
 
   // Check auth state and fetch orders
   useEffect(() => {
@@ -78,6 +81,38 @@ const MyOrdersPage = () => {
     }
   };
 
+  const submitReview = async (orderId) => {
+    if (!reviewText.trim()) {
+      alert('Please enter your review text');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "Reviews"), {
+        orderId,
+        userId: user.uid,
+        rating,
+        text: reviewText,
+        createdAt: new Date(),
+        products: orders.find(o => o.id === orderId)?.items.map(item => item.id) || []
+      });
+
+      // Update order to mark as reviewed
+      await updateDoc(doc(db, "Orders", orderId), {
+        reviewed: true
+      });
+
+      // Refresh orders
+      await fetchOrders(user.uid);
+      setReviewingOrder(null);
+      setReviewText('');
+      setRating(5);
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      setError("Failed to submit review. Please try again.");
+    }
+  };
+
   const filteredOrders = orders.filter(order => {
     if (activeFilter === 'all') return true;
     return order.status.toLowerCase() === activeFilter.toLowerCase();
@@ -91,7 +126,6 @@ const MyOrdersPage = () => {
         return '#38a169'; // green
       case 'delivered':
         return '#805ad5'; // purple
-      case 'cancelled':
       case 'cancelled':
         return '#e53e3e'; // red
       case 'pending':
@@ -110,7 +144,6 @@ const MyOrdersPage = () => {
       case 'delivered':
         return '✓';
       case 'cancelled':
-      case 'cancelled':
         return '✕';
       case 'pending':
         return '⏳';
@@ -127,6 +160,27 @@ const MyOrdersPage = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const getTrackingSteps = (order) => {
+    const steps = [
+      { id: 1, name: 'Order Placed', status: 'complete', date: order.createdAt },
+      { id: 2, name: 'Processing', status: order.status === 'pending' ? 'current' : (['processing', 'shipped', 'delivered'].includes(order.status)) ? 'complete' : 'upcoming', date: order.status !== 'pending' ? new Date(order.createdAt.getTime() + 3600000) : null },
+      { id: 3, name: 'Shipped', status: order.status === 'shipped' ? 'current' : order.status === 'delivered' ? 'complete' : (['pending', 'processing'].includes(order.status)) ? 'upcoming' : 'cancelled', date: order.status === 'shipped' || order.status === 'delivered' ? new Date(order.createdAt.getTime() + 86400000) : null },
+      { id: 4, name: 'Delivered', status: order.status === 'delivered' ? 'complete' : (['pending', 'processing', 'shipped'].includes(order.status) ? 'upcoming' : 'cancelled'), date: order.status === 'delivered' ? new Date(order.createdAt.getTime() + 172800000) : null }
+    ];
+
+    if (order.status === 'cancelled') {
+      steps.forEach(step => {
+        if (step.status === 'upcoming') step.status = 'cancelled';
+      });
+    }
+
+    return steps;
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount);
   };
 
   if (loading && orders.length === 0) {
@@ -223,7 +277,7 @@ const MyOrdersPage = () => {
                     <span className={styles.statusIcon}>{getStatusIcon(order.status)}</span>
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   </div>
-                  <div className={styles.orderTotal}>{order.currency || 'USD'} {order.total.toFixed(2)}</div>
+                  <div className={styles.orderTotal}>€ {order.total.toFixed(2)}</div>
                   <div className={styles.expandIcon}>
                     {expandedOrder === order.id ? '▲' : '▼'}
                   </div>
@@ -231,6 +285,30 @@ const MyOrdersPage = () => {
 
                 {expandedOrder === order.id && (
                   <div className={styles.orderDetails}>
+                    <div className={styles.trackingContainer}>
+                      <h3>Order Tracking</h3>
+                      <div className={styles.trackingSteps}>
+                        {getTrackingSteps(order).map((step) => (
+                          <div key={step.id} className={`${styles.step} ${styles[step.status]}`}>
+                            <div className={styles.stepIndicator}>
+                              <div className={styles.stepIcon}>
+                                {step.status === 'complete' ? '✓' : step.status === 'current' ? '●' : '○'}
+                              </div>
+                              {step.id < 4 && <div className={styles.stepLine}></div>}
+                            </div>
+                            <div className={styles.stepContent}>
+                              <div className={styles.stepName}>{step.name}</div>
+                              {step.date && (
+                                <div className={styles.stepDate}>
+                                  {formatDate(step.date)}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                     <div className={styles.detailsRow}>
                       <div className={styles.itemsSection}>
                         <h3>Items</h3>
@@ -245,7 +323,7 @@ const MyOrdersPage = () => {
                                 <p className={styles.itemVariant}>
                                   Color: #{item.color} / Size: {item.size}
                                 </p>
-                                <p className={styles.itemPrice}>{order.currency || 'USD'} {item.price.toFixed(2)}</p>
+                                <p className={styles.itemPrice}>€ {item.price.toFixed(2)}</p>
                                 <p className={styles.itemQuantity}>Qty: {item.quantity}</p>
                               </div>
                             </div>
@@ -262,7 +340,7 @@ const MyOrdersPage = () => {
 
                         <h3>Payment Method</h3>
                         <p>
-                          {order.currency ? `Paid in ${order.currency}` : 'Standard payment'}
+                          {order.paymentMethod || 'Credit Card'}
                         </p>
                       </div>
                     </div>
@@ -271,21 +349,66 @@ const MyOrdersPage = () => {
                       <h3>Order Summary</h3>
                       <div className={styles.summaryRow}>
                         <span>Subtotal:</span>
-                        <span>{order.currency || 'USD'} {order.subtotal.toFixed(2)}</span>
+                        <span>€ {order.subtotal.toFixed(2)}</span>
                       </div>
                       <div className={styles.summaryRow}>
                         <span>Shipping:</span>
-                        <span>{order.currency || 'USD'} {order.shipping.toFixed(2)}</span>
+                        <span>€ {order.shipping.toFixed(2)}</span>
                       </div>
                       <div className={styles.summaryRow}>
                         <span>Tax:</span>
-                        <span>{order.currency || 'USD'} {order.tax.toFixed(2)}</span>
+                        <span>€ {order.tax.toFixed(2)}</span>
                       </div>
                       <div className={styles.summaryTotal}>
                         <span>Total:</span>
-                        <span>{order.currency || 'USD'} {order.total.toFixed(2)}</span>
+                        <span>€ {order.total.toFixed(2)}</span>
                       </div>
                     </div>
+
+                    {order.status === 'delivered' && !order.reviewed && (
+                      <div className={styles.reviewContainer}>
+                        <h3>Leave a Review</h3>
+                        <div className={styles.ratingContainer}>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              className={`${styles.star} ${star <= rating ? styles.filled : ''}`}
+                              onClick={() => setRating(star)}
+                            >
+                              ★
+                            </button>
+                          ))}
+                        </div>
+                        <textarea
+                          className={styles.reviewTextarea}
+                          placeholder="Share your experience with these products..."
+                          value={reviewText}
+                          onChange={(e) => setReviewText(e.target.value)}
+                        />
+                        <div className={styles.reviewButtons}>
+                          <button 
+                            className={styles.submitReviewButton}
+                            onClick={() => submitReview(order.id)}
+                          >
+                            Submit Review
+                          </button>
+                          <button 
+                            className={styles.cancelReviewButton}
+                            onClick={() => setReviewingOrder(null)}
+                          >
+                            Maybe Later
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {order.status === 'delivered' && order.reviewed && (
+                      <div className={styles.reviewSubmitted}>
+                        <div className={styles.checkmark}>✓</div>
+                        <h3>Thank you for your review!</h3>
+                        <p>Your feedback helps us improve our service.</p>
+                      </div>
+                    )}
 
                     <div className={styles.actions}>
                       {(order.status === 'pending' || order.status === 'processing') && (
@@ -322,7 +445,7 @@ const MyOrdersPage = () => {
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>🛒</div>
           <h2>No Orders Yet</h2>
-          <p>You havent placed any orders with us yet.</p>
+          <p>You have not placed any orders with us yet.</p>
           <button 
             className={styles.shopButton}
             onClick={() => router.push('/')}

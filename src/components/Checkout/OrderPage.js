@@ -10,6 +10,7 @@ import {
   addDoc,
   serverTimestamp,
   writeBatch,
+  updateDoc // Added this import
 } from "firebase/firestore";
 import { db, auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -196,6 +197,11 @@ const OrderPage = () => {
         total: subtotal + shippingCost + tax,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+      });
+
+      // Update the document to include its own ID as a field
+      await updateDoc(orderRef, {
+        id: orderRef.id
       });
 
       setOrderId(orderRef.id);

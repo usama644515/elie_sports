@@ -278,7 +278,7 @@ const CartScreen = () => {
                 </div>
               )}
 
-              <div className={styles.couponSection}>
+              {/* <div className={styles.couponSection}>
                 <input
                   type="text"
                   placeholder="Coupon code"
@@ -293,7 +293,7 @@ const CartScreen = () => {
                 >
                   {isApplyingCoupon ? "Applying..." : "Apply"}
                 </button>
-              </div>
+              </div> */}
 
               {couponMessage && (
                 <div className={styles.couponMessage}>{couponMessage}</div>
