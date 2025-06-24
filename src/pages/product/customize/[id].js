@@ -1,77 +1,207 @@
 /* eslint-disable @next/next/no-img-element */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/router";
-import { doc, getDoc, setDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db, auth } from "../../../lib/firebase";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import html2canvas from "html2canvas";
+import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
+import { db, auth, storage } from "../../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import styles from "./CustomizeProduct.module.css";
 import Image from "next/image";
 import Link from "next/link";
 import LoginModal from "../../../components/Modal/LoginModal";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import {
+  ReactFlow,
+  Controls,
+  applyNodeChanges,
+  applyEdgeChanges,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import ResizableNode from "./ResizableNode";
 
-// Utility function to transform the product data with lowercase color codes
+const nodeTypes = {
+  ResizableNode,
+};
+
+// Utility function to transform the product data (no changes needed)
 const transformProductData = (product) => {
   if (!product.swatches) return product;
 
-  const transformedSwatches = product.swatches.map(swatch => {
-    // Convert color code to lowercase
-    const lowerCaseSwatch = {
-      ...swatch,
-      color: swatch.color.toLowerCase()
-    };
-
+  const transformedSwatches = product.swatches.map((swatch) => {
+    const lowerCaseSwatch = { ...swatch, color: swatch.color.toLowerCase() };
     if (!swatch.accents) return lowerCaseSwatch;
 
-    // Group sleeve variations by color (also lowercase)
     const sleeveColors = {};
-
-    swatch.accents.forEach(accent => {
-      const [type, position] = accent.name.split('-');
-      
-      accent.variations.forEach(variation => {
+    swatch.accents.forEach((accent) => {
+      const [, position] = accent.name.split("-");
+      accent.variations.forEach((variation) => {
         const lowerColor = variation.color.toLowerCase();
         if (!sleeveColors[lowerColor]) {
-          sleeveColors[lowerColor] = {
-            color: lowerColor,
-            positions: {}
-          };
+          sleeveColors[lowerColor] = { color: lowerColor, positions: {} };
         }
-        sleeveColors[lowerColor].positions[position.toLowerCase()] = variation.image;
+        sleeveColors[lowerColor].positions[position.toLowerCase()] =
+          variation.image;
       });
     });
-
-    return {
-      ...lowerCaseSwatch,
-      sleeveColors: Object.values(sleeveColors)
-    };
+    return { ...lowerCaseSwatch, sleeveColors: Object.values(sleeveColors) };
   });
 
-  return {
-    ...product,
-    swatches: transformedSwatches
-  };
+  return { ...product, swatches: transformedSwatches };
 };
 
 const CustomizeProduct = () => {
   const router = useRouter();
-  const { id } = router.query;
-  const { color: initialColor } = router.query;
+  const { id, color: initialColor } = router.query;
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [selectedSwatch, setSelectedSwatch] = useState(null);
-  const [selectedSleeveColor, setSelectedSleeveColor] = useState(null);
-  const [currentView, setCurrentView] = useState("front");
   const [selectedSize, setSelectedSize] = useState(null);
   const [allSwatches, setAllSwatches] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [cartMessage, setCartMessage] = useState("");
+  const [selectedAccentColors, setSelectedAccentColors] = useState([]);
+  const [customImage, setCustomImage] = useState([
+    {
+      base: "",
+      originalBase: "",
+      accentNameImage: "",
+      overlay: {
+        overlayImage: "",
+        screenShot: "",
+        nodes: [],
+        edges: [],
+      },
+    },
+  ]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [logoImage, setLogoImage] = useState(null);
+  const fileInputRef = useRef(null);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const previewRef = useRef(null);
 
-  // Check auth state
+  // --- React Flow State and Handlers ---
+  const onNodesChange = useCallback(
+    (changes) => {
+      setCustomImage((prev) => {
+        const newCustomImage = [...prev];
+        const currentOverlay = newCustomImage[currentImageIndex].overlay;
+        const updatedNodes = applyNodeChanges(
+          changes,
+          currentOverlay.nodes || []
+        );
+
+        newCustomImage[currentImageIndex] = {
+          ...newCustomImage[currentImageIndex],
+          overlay: { ...currentOverlay, nodes: updatedNodes },
+        };
+        return newCustomImage;
+      });
+    },
+    [currentImageIndex]
+  );
+
+  const onEdgesChange = useCallback(
+    (changes) => {
+      setCustomImage((prev) => {
+        const newCustomImage = [...prev];
+        const currentOverlay = newCustomImage[currentImageIndex].overlay;
+        const updatedEdges = applyEdgeChanges(
+          changes,
+          currentOverlay.edges || []
+        );
+
+        newCustomImage[currentImageIndex] = {
+          ...newCustomImage[currentImageIndex],
+          overlay: { ...currentOverlay, edges: updatedEdges },
+        };
+        return newCustomImage;
+      });
+    },
+    [currentImageIndex]
+  );
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setLogoImage(file);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoImage(null);
+    fileInputRef.current.value = "";
+  };
+
+  useEffect(() => {
+    let objectURL;
+
+    const createNodeFromImage = (imageUrl) => ({
+      id: `logo-node-${Date.now()}`,
+      type: "ResizableNode",
+      position: { x: 100, y: 100 },
+      data: { image: imageUrl },
+      style: { width: 150, height: "auto" },
+    });
+
+    if (logoImage) {
+      objectURL = URL.createObjectURL(logoImage);
+      setCustomImage((prev) => {
+        const updated = [...prev];
+        if (!updated[currentImageIndex]) return prev;
+        updated[currentImageIndex] = {
+          ...updated[currentImageIndex],
+          overlay: {
+            ...updated[currentImageIndex].overlay,
+            nodes: [createNodeFromImage(objectURL)],
+            overlayImage: logoImage,
+          },
+        };
+        return updated;
+      });
+    } else if (
+      customImage[currentImageIndex]?.overlay?.overlayImage instanceof File
+    ) {
+      objectURL = URL.createObjectURL(
+        customImage[currentImageIndex].overlay.overlayImage
+      );
+      setCustomImage((prev) => {
+        const updated = [...prev];
+        if (!updated[currentImageIndex]) return prev;
+
+        const currentOverlay = updated[currentImageIndex].overlay;
+        if (!currentOverlay?.nodes?.length) return prev;
+
+        const updatedNodes = [...currentOverlay.nodes];
+        updatedNodes[0] = {
+          ...updatedNodes[0],
+          data: {
+            ...updatedNodes[0].data,
+            image: objectURL, // objectURL should be a string (new image URL)
+          },
+        };
+
+        updated[currentImageIndex] = {
+          ...updated[currentImageIndex],
+          overlay: {
+            ...currentOverlay,
+            nodes: updatedNodes,
+          },
+        };
+
+        return updated;
+      });
+    }
+
+    return () => {
+      if (objectURL) URL.revokeObjectURL(objectURL);
+    };
+  }, [logoImage, currentImageIndex]);
+  // Dependency is now only on logoImage
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
@@ -80,7 +210,6 @@ const CustomizeProduct = () => {
     return () => unsubscribe();
   }, []);
 
-  // Fetch product data
   useEffect(() => {
     if (id) {
       const fetchProduct = async () => {
@@ -92,35 +221,46 @@ const CustomizeProduct = () => {
             const productData = transformProductData(docSnap.data());
             const swatches = productData.swatches || [];
             setAllSwatches(swatches);
-            
-            // Convert initialColor to lowercase for comparison
-            const lowerInitialColor = initialColor ? initialColor.toLowerCase() : null;
-            
-            // Find the selected color swatch (use initialColor if provided, otherwise first swatch)
-            const selectedSwatch = lowerInitialColor 
-              ? swatches.find(s => s.color.toLowerCase() === lowerInitialColor) || swatches[0]
-              : swatches[0];
-            
-            if (selectedSwatch) {
-              setSelectedSwatch(selectedSwatch);
-              
-              // Set first sleeve color as default if available
-              if (selectedSwatch.sleeveColors && selectedSwatch.sleeveColors.length > 0) {
-                setSelectedSleeveColor(selectedSwatch.sleeveColors[0]);
-              }
 
-              // Set first size as default
-              if (selectedSwatch.sizes && selectedSwatch.sizes.length > 0) {
-                setSelectedSize(selectedSwatch.sizes[0]);
+            const lowerInitialColor = initialColor
+              ? initialColor.toLowerCase()
+              : null;
+            const initialSwatch = lowerInitialColor
+              ? swatches.find((s) => s.color === lowerInitialColor) ||
+                swatches[0]
+              : swatches[0];
+
+            if (initialSwatch) {
+              setSelectedSwatch(initialSwatch);
+              if (initialSwatch.sizes?.length > 0) {
+                setSelectedSize(initialSwatch.sizes[0]);
+              }
+              if (
+                initialSwatch.images &&
+                typeof initialSwatch.images === "object"
+              ) {
+                const updatedImages = Object.entries(initialSwatch.images).map(
+                  ([, imageUrl]) => ({
+                    base: imageUrl,
+                    originalBase: imageUrl,
+                    accentNameImage: "",
+                    overlay: {
+                      overlayImage: "",
+                      screenShot: "",
+                      nodes: [],
+                      edges: [],
+                    },
+                  })
+                );
+                setCustomImage(updatedImages);
               }
             }
-
             setProduct({
               ...productData,
               id: docSnap.id,
               title: productData.name,
               price: productData.salePrice || productData.totalPrice,
-              swatches
+              swatches,
             });
           } else {
             console.log("No such product!");
@@ -131,53 +271,64 @@ const CustomizeProduct = () => {
           setLoading(false);
         }
       };
-
       fetchProduct();
     }
   }, [id, initialColor]);
 
   const handleSwatchSelect = (swatch) => {
     setSelectedSwatch(swatch);
-    // Reset sleeve color when changing base color
-    if (swatch.sleeveColors && swatch.sleeveColors.length > 0) {
-      setSelectedSleeveColor(swatch.sleeveColors[0]);
+    setSelectedAccentColors([]);
+    setLogoImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
+    setSelectedSize(swatch.sizes?.[0] || null);
+
+    if (swatch?.images && typeof swatch.images === "object") {
+      const updatedImages = Object.entries(swatch.images).map(
+        ([, imageUrl]) => ({
+          base: imageUrl,
+          originalBase: imageUrl,
+          accentNameImage: "",
+          overlay: { overlayImage: "", screenShot: "", nodes: [], edges: [] },
+        })
+      );
+      setCustomImage(updatedImages);
+      setCurrentImageIndex(0);
     } else {
-      setSelectedSleeveColor(null);
+      setCustomImage([
+        {
+          base: "/images/product.jpg",
+          originalBase: "/images/product.jpg",
+          accentNameImage: "",
+          overlay: { overlayImage: "", screenShot: "", nodes: [], edges: [] },
+        },
+      ]);
+      setCurrentImageIndex(0);
     }
-    // Update URL with lowercase color
-    router.replace({
-      pathname: router.pathname,
-      query: { ...router.query, color: swatch.color.toLowerCase() }
-    }, undefined, { shallow: true });
+
+    router.replace(
+      {
+        pathname: router.pathname,
+        query: { ...router.query, color: swatch.color },
+      },
+      undefined,
+      { shallow: true }
+    );
   };
 
-  const handleSleeveColorSelect = (sleeveColor) => {
-    setSelectedSleeveColor(sleeveColor);
+  const waitForImageToLoad = (element) => {
+    const images = Array.from(element.querySelectorAll("img"));
+    const promises = images.map((img) => {
+      if (img.complete) {
+        return Promise.resolve();
+      }
+      return new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+    });
+    return Promise.all(promises);
   };
-
-  const getCurrentImage = () => {
-    if (!selectedSwatch) return "/images/product.jpg";
-    
-    // Get base image for current view
-    const baseImage = selectedSwatch.images?.[currentView] || "/images/product.jpg";
-    
-    // If we have a sleeve color selected and it has an image for this view, overlay it
-    if (selectedSleeveColor && selectedSleeveColor.positions[currentView]) {
-      return {
-        base: baseImage,
-        overlay: selectedSleeveColor.positions[currentView]
-      };
-    }
-    
-    return {
-      base: baseImage,
-      overlay: null
-    };
-  };
-
-  const increaseQuantity = () => setQuantity((prev) => prev + 1);
-  const decreaseQuantity = () =>
-    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -186,65 +337,113 @@ const CustomizeProduct = () => {
     }
 
     if (!selectedSize) {
-      setCartMessage("Please select a size before adding to cart");
-      setTimeout(() => setCartMessage(""), 3000);
+      toast.warn("Please select a size before adding to cart.");
       return;
     }
-
+    setIsAddingToCart(true);
     try {
-      // Generate a composite image URL that includes both base and sleeve colors
-      const compositeImageUrl = selectedSleeveColor 
-        ? JSON.stringify({
-            base: selectedSwatch.images?.front || "/images/product.jpg",
-            sleeve: selectedSleeveColor.positions?.front || null
-          })
-        : selectedSwatch.images?.front || "/images/product.jpg";
+      const updatedCustomizations = JSON.parse(JSON.stringify(customImage));
+      handleRemoveLogo();
 
+      for (let i = 0; i < updatedCustomizations.length; i++) {
+        setCurrentImageIndex(i);
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        if (!previewRef.current) {
+          throw new Error("Error: The element to capture could not be found.");
+        }
+        await waitForImageToLoad(previewRef.current);
+        const onClone = (clonedDoc) => {
+          const controls = clonedDoc.querySelector(".react-flow__controls");
+          if (controls) controls.style.display = "none";
+        };
+
+        const canvas = await html2canvas(previewRef.current, {
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null,
+          onclone: onClone,
+        });
+
+        const blob = await new Promise((resolve) =>
+          canvas.toBlob(resolve, "image/png", 0.95)
+        );
+        if (!blob) throw new Error("Failed to create image file from canvas.");
+
+        const screenshotFileName = `screenshot-${
+          user.uid
+        }-${Date.now()}-${i}.png`;
+        const screenshotStorageRef = ref(
+          storage,
+          `screenshots/${screenshotFileName}`
+        );
+        const screenshotSnapshot = await uploadBytes(
+          screenshotStorageRef,
+          blob
+        );
+        const screenshotURL = await getDownloadURL(screenshotSnapshot.ref);
+        updatedCustomizations[i].overlay.screenShot = screenshotURL;
+        const overlayImage = customImage[i]?.overlay?.overlayImage;
+        if (overlayImage instanceof File) {
+          const logoFileName = `logoImage-${user.uid}-${Date.now()}-${i}.png`;
+          const logoStorageRef = ref(storage, `logoimage/${logoFileName}`);
+          const logoSnapshot = await uploadBytes(logoStorageRef, overlayImage);
+          const logoURL = await getDownloadURL(logoSnapshot.ref);
+          updatedCustomizations[i].overlay.overlayImage = logoURL;
+          if (updatedCustomizations[i]?.overlay?.nodes?.[0]) {
+            updatedCustomizations[i].overlay.nodes[0].data.image = logoURL;
+          }
+        }
+      }
+      setCustomImage(updatedCustomizations);
       const cartItem = {
         productId: product.id,
         name: product.title,
         price: product.price,
+        currency: product.currency,
         color: selectedSwatch.color.toLowerCase(),
         size: selectedSize,
         quantity,
-        image: selectedSleeveColor.positions?.front, // Store the composite image info
         createdAt: serverTimestamp(),
         userId: user.uid,
         status: "active",
-        isCustomized: true, // Flag to indicate this is a customized product
-        customizationDetails: {
-          baseColor: selectedSwatch.color.toLowerCase(),
-          sleeveColor: selectedSleeveColor ? selectedSleeveColor.color.toLowerCase() : null,
-          sleeveImages: selectedSleeveColor ? selectedSleeveColor.positions : null,
-          baseImages: selectedSwatch.images
-        },
-        originalProductId: product.id // Reference to the original product
+        isCustomized: true,
+        customizationDetails: updatedCustomizations,
+        selectedAccentColors,
+        originalProductId: product.id,
       };
 
-      // Generate a unique ID for the cart item with all customization details
-      const cartItemId = `${user.uid}_${product.id}_${selectedSwatch.color.toLowerCase()}_${selectedSize}_${selectedSleeveColor?.color.toLowerCase() || 'none'}`;
+      const cartItemId = `${user.uid}_${
+        product.id
+      }_${selectedSwatch.color.toLowerCase()}_${selectedSize}`.replace(
+        /[^a-zA-Z0-9_-]/g,
+        ""
+      );
       const cartItemRef = doc(db, "Cart", cartItemId);
 
-      // Check if item already exists in cart
       const existingItem = await getDoc(cartItemRef);
-      
-      if (existingItem.exists()) {
-        // Update quantity if item exists
-        await setDoc(cartItemRef, {
-          ...cartItem,
-          quantity: existingItem.data().quantity + quantity
-        }, { merge: true });
-      } else {
-        // Add new item to cart
-        await setDoc(cartItemRef, cartItem);
-      }
 
-      // Show toast with success message and "Go to Cart" button
+      if (existingItem.exists()) {
+        await setDoc(
+          cartItemRef,
+          {
+            ...cartItem,
+            quantity: !existingItem.data().quantity
+              ? quantity
+              : existingItem.data().quantity,
+          },
+          { merge: true }
+        );
+      } else {
+        await setDoc(cartItemRef, cartItem, { merge: true });
+      }
       toast.success(
         <div>
-          <p>{quantity} customized {product.title} added to cart!</p>
-          <button 
-            onClick={() => router.push('/cart')}
+          <p>
+            {quantity} customized {product.title} added to cart!
+          </p>
+          <button
+            onClick={() => router.push("/cart")}
             className={styles.goToCartButton}
           >
             Go to Cart
@@ -260,24 +459,104 @@ const CustomizeProduct = () => {
           progress: undefined,
         }
       );
+      setIsAddingToCart(false);
     } catch (error) {
+      setIsAddingToCart(false);
       console.error("Error adding to cart:", error);
-      toast.error("Failed to add to cart. Please try again.", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+      toast.error("Failed to add to cart. Please try again.");
     }
   };
 
-  if (loading || authLoading) return <div className={styles.loading}>Loading...</div>;
-  if (!product || !allSwatches.length) return <div className={styles.error}>Product not found</div>;
+  const handleAccentColorClick = (
+    color,
+    accentsItem,
+    accentIndex,
+    colorIndex
+  ) => {
+    if (selectedAccentColors.length === 0) {
+      const newColors =
+        selectedSwatch?.accents?.map((item) => ({
+          name: item?.name || "",
+          color: item?.variations[colorIndex]?.color || "",
+        })) || [];
+      const newImage =
+        selectedSwatch?.accents?.map((item) => ({
+          base: item?.variations[colorIndex]?.image || "",
+          originalBase: item?.variations[colorIndex]?.image || "",
+          accentNameImage: item?.name || "",
+          overlay: { overlayImage: "", screenShot: "", nodes: [], edges: [] },
+        })) || [];
+      setSelectedAccentColors(newColors);
+      setCustomImage(newImage);
+      setCurrentImageIndex(accentIndex);
+      return;
+    }
+    const isSameColorSelected = selectedAccentColors.some(
+      (item) =>
+        item.name.toUpperCase() === accentsItem?.name.toUpperCase() &&
+        item.color.toUpperCase() === color.color.toUpperCase()
+    );
+    if (isSameColorSelected) {
+      setSelectedAccentColors([]);
+      const updatedImages = Object.entries(selectedSwatch.images).map(
+        ([, imageUrl]) => ({
+          base: imageUrl,
+          originalBase: imageUrl,
+          accentNameImage: "",
+          overlay: { overlayImage: "", screenShot: "", nodes: [], edges: [] },
+        })
+      );
+      setCustomImage(updatedImages);
+      setCurrentImageIndex(0);
+    } else {
+      const updatedColors = selectedAccentColors.map((item) =>
+        item.name === accentsItem?.name ? { ...item, color: color.color } : item
+      );
+      const updatedImage = customImage.map((item) =>
+        item.accentNameImage === accentsItem?.name
+          ? {
+              ...item,
+              base: color.image || "",
+              originalBase: color.image || "",
+            }
+          : item
+      );
+      setSelectedAccentColors(updatedColors);
+      setCustomImage(updatedImage);
+      setCurrentImageIndex(accentIndex);
+    }
+  };
 
-  const currentImages = getCurrentImage();
+  const handleDesignItemClick = (designImage) => {
+    handleRemoveLogo(); // Clear any custom uploaded logo first
+
+    const createNodeFromImage = (imageUrl) => ({
+      id: `logo-node-${Date.now()}`,
+      type: "ResizableNode",
+      position: { x: 100, y: 100 },
+      data: { image: imageUrl },
+      style: { width: 150, height: "auto" },
+    });
+
+    setCustomImage((prev) => {
+      const updated = [...prev];
+      if (!updated[currentImageIndex]) return prev;
+      updated[currentImageIndex] = {
+        ...updated[currentImageIndex],
+        overlay: {
+          ...updated[currentImageIndex].overlay,
+          nodes: [createNodeFromImage(designImage)],
+          overlayImage: designImage,
+        },
+      };
+      return updated;
+    });
+  };
+
+  if (loading || authLoading)
+    return <div className={styles.loading}>Loading...</div>;
+  if (!product || !allSwatches.length)
+    return <div className={styles.error}>Product not found</div>;
 
   return (
     <div className={styles.customizePage}>
@@ -289,88 +568,81 @@ const CustomizeProduct = () => {
       </div>
 
       <div className={styles.customizeContainer}>
-        {/* Product Preview */}
         <div className={styles.productPreview}>
-          <div className={styles.previewImageContainer}>
-            {/* Base Image */}
+          <div className={styles.previewImageContainer} ref={previewRef}>
             <Image
-              src={currentImages.base}
-              alt={`Product ${currentView} view`}
+              src={
+                customImage[currentImageIndex]?.base || "/images/product.jpg"
+              }
+              alt={`Product view ${currentImageIndex + 1}`}
               className={styles.previewImage}
-              width={600}
-              height={600}
+              fill
+              sizes="(max-width: 768px) 100vw, 600px"
               priority
             />
-            
-            {/* Sleeve Overlay Image if exists */}
-            {currentImages.overlay && (
-              <div className={styles.sleeveOverlay}>
-                <Image
-                  src={currentImages.overlay}
-                  alt={`Sleeve ${currentView} view`}
-                  width={600}
-                  height={600}
-                  className={styles.overlayImage}
-                />
-              </div>
-            )}
+            <div className={styles.sleeveOverlay}>
+                <ReactFlow
+                  nodes={customImage[currentImageIndex]?.overlay?.nodes || []}
+                  edges={customImage[currentImageIndex]?.overlay?.edges || []}
+                  onNodesChange={onNodesChange}
+                  onEdgesChange={onEdgesChange}
+                  nodeTypes={nodeTypes}
+                  minZoom={0.2}
+                  maxZoom={4}
+                  fitView
+                  fitViewOptions={{ padding: 0.2 }}
+                  proOptions={{ hideAttribution: true }}
+                >
+                  <Controls />
+                </ReactFlow>
+            </div>
           </div>
-
-          <div className={styles.viewControls}>
-            <button
-              className={`${styles.viewButton} ${currentView === "front" ? styles.active : ""}`}
-              onClick={() => setCurrentView("front")}
-            >
-              Front
-            </button>
-            <button
-              className={`${styles.viewButton} ${currentView === "back" ? styles.active : ""}`}
-              onClick={() => setCurrentView("back")}
-            >
-              Back
-            </button>
-            <button
-              className={`${styles.viewButton} ${currentView === "left" ? styles.active : ""}`}
-              onClick={() => setCurrentView("left")}
-            >
-              Left
-            </button>
-            <button
-              className={`${styles.viewButton} ${currentView === "right" ? styles.active : ""}`}
-              onClick={() => setCurrentView("right")}
-            >
-              Right
-            </button>
+          <div className={styles.thumbnailContainer}>
+            {customImage?.length > 1 &&
+              customImage.map((image, index) => (
+                <div
+                  key={index}
+                  className={`${styles.thumbnail} ${
+                    index === currentImageIndex ? styles.activeThumbnail : ""
+                  }`}
+                  onClick={() => {
+                    handleRemoveLogo();
+                    setCurrentImageIndex(index);
+                  }}
+                  role="button"
+                  tabIndex="0"
+                  aria-label={`View image ${index + 1}`}
+                >
+                  <img src={image?.base} alt={`Thumbnail ${index + 1}`} />
+                </div>
+              ))}
           </div>
         </div>
 
-        {/* Customization Panel */}
         <div className={styles.customizationPanel}>
           <div className={styles.productInfo}>
             <h2>{product.title}</h2>
             <div className={styles.priceContainer}>
               <span className={styles.price}>€{product.price.toFixed(2)}</span>
-              {selectedSwatch?.sleeveColors?.length > 0 && (
-                <span className={styles.customizationTag}>Customizable</span>
-              )}
             </div>
             <p className={styles.description}>{product.description}</p>
           </div>
 
-          {/* Base Color Selection */}
           <div className={styles.colorSelection}>
             <h3>Select Base Color</h3>
             <div className={styles.colorSwatches}>
-              {allSwatches.map(swatch => (
+              {allSwatches.map((swatch) => (
                 <button
                   key={swatch.color}
                   className={`${styles.colorSwatchButton} ${
-                    selectedSwatch?.color === swatch.color ? styles.selected : ''
+                    selectedSwatch?.color === swatch.color
+                      ? styles.selected
+                      : ""
                   }`}
                   onClick={() => handleSwatchSelect(swatch)}
                   aria-label={`Color ${swatch.color}`}
                 >
-                  <div 
+                  <div
                     className={styles.colorSwatch}
                     style={{ backgroundColor: `#${swatch.color}` }}
                   />
@@ -379,14 +651,15 @@ const CustomizeProduct = () => {
             </div>
           </div>
 
-          {/* Size Selection */}
           <div className={styles.sizeSelection}>
             <h3>Select Size</h3>
             <div className={styles.sizeOptions}>
-              {selectedSwatch?.sizes?.map(size => (
+              {selectedSwatch?.sizes?.map((size) => (
                 <button
                   key={size}
-                  className={`${styles.sizeButton} ${selectedSize === size ? styles.selected : ''}`}
+                  className={`${styles.sizeButton} ${
+                    selectedSize === size ? styles.selected : ""
+                  }`}
                   onClick={() => setSelectedSize(size)}
                 >
                   {size}
@@ -395,13 +668,12 @@ const CustomizeProduct = () => {
             </div>
           </div>
 
-          {/* Quantity Selection */}
           <div className={styles.quantitySection}>
             <h3>Quantity</h3>
             <div className={styles.quantityControls}>
               <button
                 className={styles.quantityButton}
-                onClick={decreaseQuantity}
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                 aria-label="Decrease quantity"
               >
                 -
@@ -409,7 +681,7 @@ const CustomizeProduct = () => {
               <span className={styles.quantityValue}>{quantity}</span>
               <button
                 className={styles.quantityButton}
-                onClick={increaseQuantity}
+                onClick={() => setQuantity((q) => q + 1)}
                 aria-label="Increase quantity"
               >
                 +
@@ -417,58 +689,122 @@ const CustomizeProduct = () => {
             </div>
           </div>
 
-          {cartMessage && (
-            <div className={styles.cartMessage}>{cartMessage}</div>
-          )}
-
-          {/* Sleeve Color Selection */}
-          {selectedSwatch?.sleeveColors?.length > 0 && (
-            <div className={styles.sleeveSelection}>
-              <h3>Sleeve Color</h3>
-              <div className={styles.sleeveColorOptions}>
-                {selectedSwatch.sleeveColors.map(sleeveColor => (
-                  <button
-                    key={sleeveColor.color}
-                    className={`${styles.sleeveColorButton} ${
-                      selectedSleeveColor?.color === sleeveColor.color ? styles.selected : ''
-                    }`}
-                    onClick={() => handleSleeveColorSelect(sleeveColor)}
-                    aria-label={`Sleeve color ${sleeveColor.color}`}
-                  >
-                    <div 
-                      className={styles.sleeveColorSwatch}
-                      style={{ backgroundColor: `#${sleeveColor.color}` }}
-                    />
-                  </button>
-                ))}
+          {selectedSwatch?.accents?.length > 0 &&
+            selectedSwatch.accents.map((accentsItem, accentIndex) => (
+              <div className={styles.colorSelection} key={accentsItem.name}>
+                <h3 className={styles.sectionTitle}>{accentsItem?.name}</h3>
+                <div className={styles.colorSwatches}>
+                  {accentsItem.variations?.map((color, colorIndex) => (
+                    <button
+                      key={color.color}
+                      className={`${styles.colorSwatchButton} ${
+                        selectedAccentColors.some(
+                          (item) =>
+                            item.name.toUpperCase() ===
+                              accentsItem?.name.toUpperCase() &&
+                            item.color.toUpperCase() ===
+                              color.color.toUpperCase()
+                        )
+                          ? styles.selected
+                          : ""
+                      }`}
+                      onClick={() =>
+                        handleAccentColorClick(
+                          color,
+                          accentsItem,
+                          accentIndex,
+                          colorIndex
+                        )
+                      }
+                      aria-label={`Color ${color.color}`}
+                    >
+                      <div
+                        className={styles.colorSwatch}
+                        style={{ backgroundColor: `#${color.color}` }}
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
+            ))}
+
+          <div className={styles.colorSelection}>
+            <h3 className={styles.sectionTitle}>Add a Logo or Design</h3>
+            {selectedSwatch?.designItems?.length > 0 && (
+              <>
+                <div className={styles.thumbnailContainer}>
+                  {selectedSwatch.designItems.map((item) =>
+                    item.variations?.map((design, designIndex) => (
+                      <div
+                        key={designIndex}
+                        className={styles.thumbnail}
+                        onClick={() => handleDesignItemClick(design.image)}
+                        role="button"
+                        tabIndex="0"
+                        aria-label={`Select design ${designIndex + 1}`}
+                      >
+                        <img
+                          src={design.image}
+                          alt={`Design ${designIndex + 1}`}
+                        />
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+            <div className={styles.uploadSection}>
+              <h4>Or Upload Your Own:</h4>
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+              />
+              {logoImage && (
+                <div>
+                  <p>Your Upload:</p>
+                  <img
+                    src={URL.createObjectURL(logoImage)}
+                    alt="Uploaded logo preview"
+                    style={{ width: 200, marginTop: 10 }}
+                  />
+                  <button
+                    onClick={handleRemoveLogo}
+                    className={`${styles.sizeButton}`}
+                  >
+                    X
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
           <div className={styles.actionButtons}>
             <button
               className={styles.addToCartButton}
               onClick={handleAddToCart}
-              disabled={!selectedSize}
+              disabled={!selectedSize || isAddingToCart}
             >
-              Add Customized Product to Cart - €{(product.price * quantity).toFixed(2)}
+              {isAddingToCart
+                ? "Processing Customization..."
+                : `Add to Cart - €${(product.price * quantity).toFixed(2)}`}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Login Modal */}
       {showLoginModal && (
-        <LoginModal 
+        <LoginModal
           onClose={() => setShowLoginModal(false)}
-          onLoginSuccess={() => {
-            setShowLoginModal(false);
-          }}
+          onLoginSuccess={() => setShowLoginModal(false)}
         />
       )}
-
-      {/* Toast Container */}
-      <ToastContainer />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+      />
     </div>
   );
 };

@@ -1,10 +1,10 @@
 // components/Modal/LoginModal.js
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import { auth, db } from '../../lib/firebase';
 import { GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { FaGoogle, FaEnvelope, FaLock, FaUser, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 import styles from './LoginModal.module.css';
 
@@ -14,6 +14,7 @@ export default function LoginModal({ isOpen, onRequestClose }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -51,12 +52,32 @@ export default function LoginModal({ isOpen, onRequestClose }) {
 
       // Create user document in Firestore
       const userRef = doc(db, 'users', user.uid);
+      const fullName = user.displayName || '';
+      const nameParts = fullName.trim().split(' ');
       await setDoc(userRef, {
         email: user.email,
-        name: user.displayName,
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
         createdAt: new Date(),
       }, { merge: true });
-
+      const chatRef = doc(db, 'userChats', user.uid);
+      await setDoc(chatRef, {
+        userId: user.uid,
+        userName: user.displayName || '',
+        participants: {
+          [user.uid]: true,
+          admin: true,
+        },
+        createdAt: serverTimestamp(),
+        lastMessage: {
+          text: '',
+          senderId: '',
+          isAdmin: false,
+          read: true,
+          status: 'sent',
+          timestamp: null,
+        }
+      });
       onRequestClose();
     } catch (error) {
       setErrorMessage(getFriendlyErrorMessage(error.code));
@@ -69,8 +90,7 @@ export default function LoginModal({ isOpen, onRequestClose }) {
     e.preventDefault();
     setLoading(true);
     setErrorMessage('');
-    
-    // Basic validation
+
     if (!isLogin && password.length < 6) {
       setErrorMessage('Password must be at least 6 characters');
       setLoading(false);
@@ -84,14 +104,35 @@ export default function LoginModal({ isOpen, onRequestClose }) {
         const result = await createUserWithEmailAndPassword(auth, email, password);
         const user = result.user;
 
-        // Create user document in Firestore after signing up
         const userRef = doc(db, 'users', user.uid);
         await setDoc(userRef, {
           email: user.email,
-          name: name,
+          firstName: name,
+          lastName,
           createdAt: new Date(),
         });
+
+        // 🔥 Also create chat document on sign-up
+        const chatRef = doc(db, 'userChats', user.uid);
+        await setDoc(chatRef, {
+          userId: user.uid,
+          userName: name || '',
+          participants: {
+            [user.uid]: true,
+            admin: true
+          },
+          createdAt: serverTimestamp(),
+          lastMessage: {
+            text: '',
+            senderId: '',
+            isAdmin: false,
+            read: true,
+            status: 'sent',
+            timestamp: null
+          }
+        });
       }
+
       onRequestClose();
     } catch (error) {
       setErrorMessage(getFriendlyErrorMessage(error.code));
@@ -110,6 +151,20 @@ export default function LoginModal({ isOpen, onRequestClose }) {
     setShowPassword(!showPassword);
   };
 
+  useEffect(() => {
+    if (!isOpen) {
+      setEmail('');
+      setPassword('');
+      setName('');
+      setLastName('');
+      setErrorMessage('');
+      setLoading(false);
+      setGoogleLoading(false);
+      setShowPassword(false);
+      setIsLogin(true);
+    }
+  }, [isOpen]);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -127,8 +182,8 @@ export default function LoginModal({ isOpen, onRequestClose }) {
         </div>
 
         <div className={styles.socialButtons}>
-          <button 
-            className={`${styles.socialButton} ${styles.google}`} 
+          <button
+            className={`${styles.socialButton} ${styles.google}`}
             onClick={handleGoogleLogin}
             disabled={googleLoading}
           >
@@ -155,7 +210,20 @@ export default function LoginModal({ isOpen, onRequestClose }) {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Full Name"
+                placeholder="First Name"
+                className={styles.input}
+                required
+              />
+            </div>
+          )}
+          {!isLogin && (
+            <div className={styles.inputGroup}>
+              <FaUser className={styles.inputIcon} />
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Last Name"
                 className={styles.input}
                 required
               />
@@ -183,8 +251,8 @@ export default function LoginModal({ isOpen, onRequestClose }) {
               required
               minLength="6"
             />
-            <button 
-              type="button" 
+            <button
+              type="button"
               className={styles.passwordToggle}
               onClick={togglePasswordVisibility}
             >
@@ -200,8 +268,8 @@ export default function LoginModal({ isOpen, onRequestClose }) {
 
           {errorMessage && <p className={styles.error}>{errorMessage}</p>}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className={styles.submitButton}
             disabled={loading || (!isLogin && password.length < 6)}
           >

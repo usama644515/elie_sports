@@ -10,7 +10,7 @@ import {
   addDoc,
   serverTimestamp,
   writeBatch,
-  updateDoc // Added this import
+  updateDoc, // Added this import
 } from "firebase/firestore";
 import { db, auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -156,13 +156,26 @@ const OrderPage = () => {
       return value;
     }
   };
-
-  // Place order
+    // Place order
   const placeOrder = async () => {
     if (!user || cartItems.length === 0) return;
 
     try {
       setLoading(true);
+      if (
+        !shippingInfo?.name ||
+        !shippingInfo?.email ||
+        !shippingInfo?.phone ||
+        !shippingInfo?.address ||
+        !shippingInfo?.city ||
+        subtotal == null ||
+        tax == null ||
+        shippingCost == null
+      ) {
+        setError("Missing required order information.");
+        setLoading(false);
+        return;
+      }
 
       // Format address as per schema
       const formattedAddress = `${shippingInfo.address}, ${shippingInfo.city} ${shippingInfo.state} ${shippingInfo.zip}, ${shippingInfo.country}`;
@@ -175,18 +188,18 @@ const OrderPage = () => {
         date: new Date().toISOString().split("T")[0], // Format as YYYY-MM-DD
         email: shippingInfo.email,
         items: cartItems.map((item) => ({
-          customization: item.isCustomized,
+          customization: item.isCustomized || false,
           customizationDetails: item.isCustomized
-            ? item.customizationDetails
-            : null,
+            ? item.customizationDetails || []
+            : [],
           color: item.color || "000000",
           currency: "EUR",
-          id: item.productId,
-          image: item.image,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          shipment: shippingCost,
+          id: item.productId || "unknown-product-id",
+          image: item.images || [],
+          name: item.name || "Unnamed Product",
+          price: item.price || 0,
+          quantity: item.quantity || 1,
+          shipment: shippingCost || 0,
           size: item.size || "M",
         })),
         phone: shippingInfo.phone,
@@ -201,7 +214,7 @@ const OrderPage = () => {
 
       // Update the document to include its own ID as a field
       await updateDoc(orderRef, {
-        id: orderRef.id
+        id: orderRef.id,
       });
 
       setOrderId(orderRef.id);
@@ -317,8 +330,11 @@ const OrderPage = () => {
                     <img
                       src={
                         item.isCustomized
-                          ? item.customizationDetails.sleeveImages.front
-                          : item.image
+                          ? item.customizationDetails.length === 0 ||
+                            !item.customizationDetails[0]?.overlay?.screenShot
+                            ? item.customizationDetails[0]?.base
+                            : item.customizationDetails[0]?.overlay.screenShot
+                          : item.images[0]
                       }
                       alt={item.name}
                     />

@@ -19,7 +19,8 @@ import {
 import styles from "./Header.module.css";
 import Link from "next/link";
 import LoginModal from "./Modal/LoginModal";
-import { auth } from "../lib/firebase";
+import { auth, db } from "../lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 
 const Header = () => {
@@ -34,19 +35,33 @@ const Header = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        // Fetch additional user data from Firestore
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userDocRef);
+
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            setUser(userData || null);
+          } else {
+            console.log("No user document found in Firestore");
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      } else {
+        setUser(null);
+      }
     });
 
     const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      setScrolled(window.scrollY > 10);
     };
 
     window.addEventListener("scroll", handleScroll);
+
     return () => {
       unsubscribe();
       window.removeEventListener("scroll", handleScroll);
@@ -94,6 +109,7 @@ const Header = () => {
       await signOut(auth);
       setProfileDropdownOpen(false);
       alert("You have been logged out successfully.");
+      window.location.href = "/login?redirect=/profile";
     } catch (error) {
       console.error("Error signing out:", error);
       alert("Error signing out. Please try again.");
@@ -140,9 +156,8 @@ const Header = () => {
                 <FaChevronDown className={styles.dropdownIcon} />
               </a>
               <div
-                className={`${styles.dropdown} ${
-                  activeDropdown === "categories" ? styles.active : ""
-                }`}
+                className={`${styles.dropdown} ${activeDropdown === "categories" ? styles.active : ""
+                  }`}
               >
                 <div className={styles.dropdownContent}>
                   {/* First Level Submenu */}
@@ -163,11 +178,10 @@ const Header = () => {
                         </Link>
                         {/* Second Level Submenu */}
                         <div
-                          className={`${styles.subDropdown} ${
-                            activeSubDropdown === "basketball"
-                              ? styles.active
-                              : ""
-                          }`}
+                          className={`${styles.subDropdown} ${activeSubDropdown === "basketball"
+                            ? styles.active
+                            : ""
+                            }`}
                         >
                           <div className={styles.subDropdownContent}>
                             <div className={styles.subDropdownSection}>
@@ -262,11 +276,10 @@ const Header = () => {
                         </Link>
                         {/* Second Level Submenu */}
                         <div
-                          className={`${styles.subDropdown} ${
-                            activeSubDropdown === "equipment"
-                              ? styles.active
-                              : ""
-                          }`}
+                          className={`${styles.subDropdown} ${activeSubDropdown === "equipment"
+                            ? styles.active
+                            : ""
+                            }`}
                         >
                           <div className={styles.subDropdownContent}>
                             <div className={styles.subDropdownSection}>
@@ -458,9 +471,8 @@ const Header = () => {
 
         <div className={styles.navActions}>
           <div
-            className={`${styles.searchContainer} ${
-              searchOpen ? styles.open : ""
-            }`}
+            className={`${styles.searchContainer} ${searchOpen ? styles.open : ""
+              }`}
           >
             <input
               id="searchInput"
@@ -483,18 +495,18 @@ const Header = () => {
               >
                 <FiUser className={styles.profileIcon} />
                 <span className={styles.userName}>
-                  {user.displayName || "Account"}
+                  {!user.firstName ? "Account" : `${user.firstName} ${user.lastName || ""}`}
                 </span>
               </button>
               {profileDropdownOpen && (
                 <div className={styles.profileDropdown}>
                   <div className={styles.profileDropdownHeader}>
                     <div className={styles.profileInitial}>
-                      {user.displayName?.charAt(0) || "A"}
+                      {user.firstName.charAt(0) || "A"}
                     </div>
                     <div className={styles.profileInfo}>
                       <div className={styles.profileName}>
-                        {user.displayName || "Account"}
+                        {!user.firstName ? "Account" : `${user.firstName} ${user.lastName || ""}`}
                       </div>
                       <div className={styles.profileEmail}>{user.email}</div>
                     </div>

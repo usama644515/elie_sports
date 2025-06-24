@@ -1,11 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { doc, getDoc, setDoc, collection, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db, auth } from "../../lib/firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
 import styles from "./ProductPage.module.css";
 import LoginModal from "../Modal/LoginModal";
+import { toast } from "react-toastify";
 
 const ProductPage = () => {
   const router = useRouter();
@@ -14,7 +20,6 @@ const ProductPage = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-
   // State management
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -25,10 +30,11 @@ const ProductPage = () => {
   const [cartMessage, setCartMessage] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [quoteForm, setQuoteForm] = useState({
-    name: user?.displayName || "",
-    email: user?.email || "",
+    firstName: "",
+    lastName: "",
+    email: "",
     phone: "",
-    message: ""
+    message: "",
   });
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -42,23 +48,43 @@ const ProductPage = () => {
     }, 3000);
   };
 
-  // Check auth state
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-        setQuoteForm(prev => ({
-          ...prev,
-          name: user.displayName || prev.name,
-          email: user.email || prev.email
-        }));
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      setUser(currentUser);
+
+      if (currentUser) {
+        const docRef = doc(db, "users", currentUser.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          setUser({ ...userData, uid: currentUser.uid });
+          setQuoteForm((prev) => ({
+            ...prev,
+            firstName: userData.firstName || prev.name,
+            lastName: userData.lastName || prev.name,
+            email: userData.email || prev.email,
+          }));
+        }
       } else {
         setUser(null);
       }
       setAuthLoading(false);
     });
+
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      setQuoteForm({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phone: "",
+        message: "",
+      });
+    }
+  }, [user]);
 
   // Fetch product data
   useEffect(() => {
@@ -71,23 +97,24 @@ const ProductPage = () => {
           if (docSnap.exists()) {
             const productData = docSnap.data();
             const swatches = productData.swatches || [];
-            
+
             // Get available colors from swatches
-            const colors = swatches.map(swatch => ({
+            const colors = swatches.map((swatch) => ({
               hex: swatch.color,
-              name: `#${swatch.color}`
+              name: `#${swatch.color}`,
             }));
 
             // Set initial selected color (first one)
             const initialColor = colors[0]?.hex;
-            
+
             // Get sizes for initial color
-            const initialSwatch = swatches.find(s => s.color === initialColor) || swatches[0];
+            const initialSwatch =
+              swatches.find((s) => s.color === initialColor) || swatches[0];
             const initialSizes = initialSwatch?.sizes || [];
-            
+
             // Check if product is customizable
-            const isCustomizable = swatches.some(swatch => 
-              swatch.designItems && swatch.designItems.length > 0
+            const isCustomizable = swatches.some(
+              (swatch) => swatch.designItems && swatch.designItems.length > 0
             );
 
             setProduct({
@@ -115,8 +142,9 @@ const ProductPage = () => {
                 `Subcategory: ${productData.subCategory}`,
                 `Delivery in ${productData.deliveryTime} days`,
               ],
-              description: productData.description || "No description available",
-              isCustomizable
+              description:
+                productData.description || "No description available",
+              isCustomizable,
             });
 
             // Set initial selections
@@ -143,9 +171,11 @@ const ProductPage = () => {
   // Update product when color changes
   useEffect(() => {
     if (product && selectedColor) {
-      const selectedSwatch = product.swatches.find(s => s.color === selectedColor);
+      const selectedSwatch = product.swatches.find(
+        (s) => s.color === selectedColor
+      );
       if (selectedSwatch) {
-        setProduct(prev => ({
+        setProduct((prev) => ({
           ...prev,
           sizes: selectedSwatch.sizes || [],
           currentSwatch: selectedSwatch,
@@ -154,7 +184,7 @@ const ProductPage = () => {
             selectedSwatch.images?.back || "/images/product.jpg",
             selectedSwatch.images?.left || "/images/product.jpg",
             selectedSwatch.images?.right || "/images/product.jpg",
-          ]
+          ],
         }));
         // Reset size selection when color changes
         setSelectedSize(selectedSwatch.sizes?.[0] || null);
@@ -205,7 +235,7 @@ const ProductPage = () => {
         color: selectedColor,
         size: selectedSize,
         quantity,
-        image: product.images[0],
+        images: product.images,
         createdAt: serverTimestamp(),
         userId: user.uid,
         status: "active",
@@ -213,18 +243,26 @@ const ProductPage = () => {
       };
 
       // Generate a unique ID for the cart item
-      const cartItemId = `${user.uid}_${product.id}_${selectedColor}_${selectedSize}`;
+      const cartItemId =
+        `${user.uid}_${product.id}_${selectedColor}_${selectedSize}`.replace(
+          /[^a-zA-Z0-9_-]/g,
+          ""
+        );
       const cartItemRef = doc(db, "Cart", cartItemId);
 
       // Check if item already exists in cart
       const existingItem = await getDoc(cartItemRef);
-      
+
       if (existingItem.exists()) {
         // Update quantity if item exists
-        await setDoc(cartItemRef, {
-          ...cartItem,
-          quantity: existingItem.data().quantity + quantity
-        }, { merge: true });
+        await setDoc(
+          cartItemRef,
+          {
+            ...cartItem,
+            quantity: existingItem.data().quantity + quantity,
+          },
+          { merge: true }
+        );
       } else {
         // Add new item to cart
         await setDoc(cartItemRef, cartItem);
@@ -256,6 +294,10 @@ const ProductPage = () => {
 
   const handleQuoteSubmit = async (e) => {
     e.preventDefault();
+    if (!user) {
+      window.location.href = "/login?redirect=/profile";
+      return;
+    }
     try {
       const quoteData = {
         ...quoteForm,
@@ -265,37 +307,35 @@ const ProductPage = () => {
         selectedSize,
         quantity,
         createdAt: serverTimestamp(),
-        status: "pending"
+        status: "pending",
+        ...(user?.uid && { userId: user.uid }),
+        ...(user?.email && { email: user.email }),
       };
-
-      if (user) {
-        quoteData.userId = user.uid;
-        quoteData.email = user.email;
-      }
 
       const quoteRef = doc(collection(db, "Quotes"));
       await setDoc(quoteRef, quoteData);
-      
-      setCartMessage("Your quote request has been submitted successfully!");
+
+      toast.success("Your quote request has been submitted successfully!");
       setQuoteForm({
-        name: user?.displayName || "",
+        firstName: user?.firstName || "",
+        lastName: user?.lastName || "",
         email: user?.email || "",
         phone: "",
-        message: ""
+        message: "",
       });
       setTimeout(() => setCartMessage(""), 5000);
     } catch (error) {
       console.error("Error submitting quote:", error);
-      setCartMessage("Failed to submit quote. Please try again.");
+      toast.error("Failed to submit quote. Please try again.");
       setTimeout(() => setCartMessage(""), 3000);
     }
   };
 
   const handleQuoteChange = (e) => {
     const { name, value } = e.target;
-    setQuoteForm(prev => ({
+    setQuoteForm((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -359,16 +399,14 @@ const ProductPage = () => {
     }
   };
 
-  if (loading || authLoading) return <div className={styles.loading}>Loading...</div>;
+  if (loading || authLoading)
+    return <div className={styles.loading}>Loading...</div>;
   if (!product) return <div className={styles.error}>Product not found</div>;
-
   return (
     <div className={styles.productPage}>
       {/* Toast Notification */}
       {showToast && (
-        <div className={styles.toastNotification}>
-          {toastMessage}
-        </div>
+        <div className={styles.toastNotification}>{toastMessage}</div>
       )}
 
       <div className={styles.productContainer}>
@@ -410,23 +448,24 @@ const ProductPage = () => {
             </button>
           </div>
           <div className={styles.thumbnailContainer}>
-            {product.images.map((image, index) => (
-              <div
-                key={index}
-                className={`${styles.thumbnail} ${
-                  index === currentImageIndex ? styles.activeThumbnail : ""
-                }`}
-                onClick={() => setCurrentImageIndex(index)}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && setCurrentImageIndex(index)
-                }
-                tabIndex="0"
-                role="button"
-                aria-label={`View image ${index + 1}`}
-              >
-                <img src={image} alt={`Thumbnail ${index + 1}`} />
-              </div>
-            ))}
+            {product.images?.length > 0 &&
+              product.images.map((image, index) => (
+                <div
+                  key={index}
+                  className={`${styles.thumbnail} ${
+                    index === currentImageIndex ? styles.activeThumbnail : ""
+                  }`}
+                  onClick={() => setCurrentImageIndex(index)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && setCurrentImageIndex(index)
+                  }
+                  tabIndex="0"
+                  role="button"
+                  aria-label={`View image ${index + 1}`}
+                >
+                  <img src={image} alt={`Thumbnail ${index + 1}`} />
+                </div>
+              ))}
           </div>
         </div>
 
@@ -472,7 +511,8 @@ const ProductPage = () => {
           {product.colors && product.colors.length > 0 && (
             <div className={styles.colorSelection}>
               <h3 className={styles.sectionTitle}>
-                Color: <span>{selectedColor ? `#${selectedColor}` : "Select"}</span>
+                Color:{" "}
+                <span>{selectedColor ? `#${selectedColor}` : "Select"}</span>
               </h3>
               <div className={styles.colorOptions}>
                 {product.colors.map((color) => (
@@ -491,12 +531,11 @@ const ProductPage = () => {
               </div>
             </div>
           )}
-
           {product.sizes && product.sizes.length > 0 && (
             <div className={styles.sizeSelection}>
               <div className={styles.sizeHeader}>
-                <h3 className={styles.sectionTitle}>Size</h3>
-                <button className={styles.sizeGuideButton}>Size Guide</button>
+                <h3 className={styles.sectionTitle}>Sizes</h3>
+                {/* <button className={styles.sizeGuideButton}>Size Guide</button> */}
               </div>
               <div className={styles.sizeOptions}>
                 {product.sizes.map((size) => (
@@ -562,15 +601,27 @@ const ProductPage = () => {
             <form onSubmit={handleQuoteSubmit}>
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
-                  <label>Name</label>
+                  <label>First Name</label>
                   <input
                     type="text"
-                    name="name"
-                    value={quoteForm.name}
+                    name="firstName"
+                    value={quoteForm.firstName}
                     onChange={handleQuoteChange}
                     required
                   />
                 </div>
+                <div className={styles.formGroup}>
+                  <label>Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={quoteForm.lastName}
+                    onChange={handleQuoteChange}
+                    required
+                  />
+                </div>
+              </div>
+              <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label>Email</label>
                   <input
@@ -581,8 +632,6 @@ const ProductPage = () => {
                     required
                   />
                 </div>
-              </div>
-              <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label>Phone</label>
                   <input
@@ -593,6 +642,8 @@ const ProductPage = () => {
                     required
                   />
                 </div>
+              </div>
+              <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label>Quantity</label>
                   <input
@@ -673,7 +724,7 @@ const ProductPage = () => {
 
       {/* Login Modal */}
       {showLoginModal && (
-        <LoginModal 
+        <LoginModal
           onClose={() => setShowLoginModal(false)}
           onLoginSuccess={() => {
             setShowLoginModal(false);

@@ -173,7 +173,7 @@ const CartScreen = () => {
       </div>
     );
   }
-
+  console.log(cartItems);
   return (
     <div className={styles.cartContainer}>
       <div className={styles.cartHeader}>
@@ -198,7 +198,17 @@ const CartScreen = () => {
             {cartItems.map((item) => (
               <div key={item.id} className={styles.cartItem}>
                 <div className={styles.itemImage}>
-                  <img src={item.isCustomized? item.customizationDetails.sleeveImages.front : item.image} alt={item.name} />
+                  <img
+                    src={
+                      item.isCustomized
+                        ? item.customizationDetails.length === 0 ||
+                          !item.customizationDetails[0]?.overlay?.screenShot
+                          ? item.customizationDetails[0]?.base
+                          : item.customizationDetails[0]?.overlay.screenShot
+                        : item.images[0]
+                    }
+                    alt={item.name}
+                  />
                 </div>
 
                 <div className={styles.itemDetails}>

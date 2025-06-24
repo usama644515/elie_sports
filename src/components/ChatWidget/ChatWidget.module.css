@@ -1,0 +1,270 @@
+/* Chat Widget Button */
+.chatWidget {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background-color: #1F6DAD;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  z-index: 9998;
+  transition: all 0.3s ease;
+}
+
+.chatWidget:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+}
+
+.chatWidget svg {
+  width: 28px;
+  height: 28px;
+}
+
+.chatWidget.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.unreadBadge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Chat Modal */
+.chatModal {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 350px;
+  height: 500px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { 
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.modalHeader {
+  padding: 16px;
+  background-color: #1b639d;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.messagesContainer {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background-color: #f5f7fb;
+}
+
+.noMessages {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #7f8c8d;
+  font-size: 0.95rem;
+}
+
+.message {
+  margin-bottom: 12px;
+  max-width: 80%;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sent {
+  align-self: flex-end;
+}
+
+.received {
+  align-self: flex-start;
+}
+
+.senderName {
+  font-size: 0.7rem;
+  color: #7f8c8d;
+  margin-bottom: 2px;
+  margin-left: 8px;
+}
+
+.messageContent {
+  padding: 10px 14px;
+  border-radius: 14px;
+  line-height: 1.4;
+}
+
+.sent .messageContent {
+  background-color: #1F6DAD;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.received .messageContent {
+  background-color: white;
+  color: #2d3436;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.messageText {
+  font-size: 0.9rem;
+}
+
+.messageMeta {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 0.65rem;
+}
+
+.sent .messageMeta {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.received .messageMeta {
+  color: #95a5a6;
+}
+
+.messageTime {
+  margin-right: 6px;
+}
+
+.messageStatus {
+  font-size: 0.7rem;
+}
+
+.messageForm {
+  display: flex;
+  padding: 12px;
+  background-color: white;
+  border-top: 1px solid #e6e9f0;
+}
+
+.messageInput {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #e6e9f0;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.messageInput:focus {
+  border-color: #1F6DAD;
+}
+
+.sendButton {
+  width: 40px;
+  height: 40px;
+  margin-left: 8px;
+  background-color: #1F6DAD;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.sendButton:disabled {
+  background-color: #b2bec3;
+  cursor: not-allowed;
+}
+
+.sendButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .chatModal {
+    width: calc(100vw - 60px);
+    height: 70vh;
+    bottom: 20px;
+    left: 20px;
+  }
+  
+  .chatWidget {
+    bottom: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .chatWidget svg {
+    width: 24px;
+    height: 24px;
+  }
+}

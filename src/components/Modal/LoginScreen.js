@@ -1,17 +1,38 @@
 // pages/login.js
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { auth, db } from '../../lib/firebase';
-import { GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { FaGoogle, FaEnvelope, FaLock, FaUser, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { doc, setDoc } from 'firebase/firestore';
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
+} from 'firebase/auth';
+import {
+  doc,
+  setDoc,
+  serverTimestamp
+} from 'firebase/firestore';
 import Head from 'next/head';
 import Link from 'next/link';
 import styles from './LoginScreen.module.css';
+import {
+  FaGoogle,
+  FaEnvelope,
+  FaLock,
+  FaUser,
+  FaSpinner,
+  FaEye,
+  FaEyeSlash
+} from 'react-icons/fa';
 
 export default function LoginScreen() {
+  const router = useRouter();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -43,19 +64,44 @@ export default function LoginScreen() {
     setGoogleLoading(true);
     setErrorMessage('');
     const provider = new GoogleAuthProvider();
+
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
       const userRef = doc(db, 'users', user.uid);
+      const fullName = user.displayName || '';
+      const nameParts = fullName.trim().split(' ');
+
       await setDoc(userRef, {
         email: user.email,
-        name: user.displayName,
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
         createdAt: new Date(),
       }, { merge: true });
 
-      window.location.href = '/';
+      const chatRef = doc(db, 'userChats', user.uid);
+      await setDoc(chatRef, {
+        userId: user.uid,
+        userName: user.displayName || '',
+        participants: {
+          [user.uid]: true,
+          admin: true,
+        },
+        createdAt: serverTimestamp(),
+        lastMessage: {
+          text: '',
+          senderId: '',
+          isAdmin: false,
+          read: true,
+          status: 'sent',
+          timestamp: null,
+        }
+      });
+
+      router.push('/');
     } catch (error) {
+      console.error('Google login error:', error);
       setErrorMessage(getFriendlyErrorMessage(error.code));
     } finally {
       setGoogleLoading(false);
@@ -66,7 +112,7 @@ export default function LoginScreen() {
     e.preventDefault();
     setLoading(true);
     setErrorMessage('');
-    
+
     if (!isLogin && password.length < 6) {
       setErrorMessage('Password must be at least 6 characters');
       setLoading(false);
@@ -74,21 +120,56 @@ export default function LoginScreen() {
     }
 
     try {
+      let user;
+
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        user = result.user;
       } else {
         const result = await createUserWithEmailAndPassword(auth, email, password);
-        const user = result.user;
+        user = result.user;
 
         const userRef = doc(db, 'users', user.uid);
         await setDoc(userRef, {
           email: user.email,
-          name: name,
+          firstName: name,
+          lastName,
           createdAt: new Date(),
         });
+
+        const chatRef = doc(db, 'userChats', user.uid);
+        await setDoc(chatRef, {
+          userId: user.uid,
+          userName: name || '',
+          participants: {
+            [user.uid]: true,
+            admin: true
+          },
+          createdAt: serverTimestamp(),
+          lastMessage: {
+            text: '',
+            senderId: '',
+            isAdmin: false,
+            read: true,
+            status: 'sent',
+            timestamp: null
+          }
+        });
       }
-      window.location.href = '/';
+
+      setEmail('');
+      setPassword('');
+      setName('');
+      setLastName('');
+      setErrorMessage('');
+      setLoading(false);
+      setGoogleLoading(false);
+      setShowPassword(false);
+      setIsLogin(true);
+
+      router.push('/');
     } catch (error) {
+      console.error('Email/password auth error:', error);
       setErrorMessage(getFriendlyErrorMessage(error.code));
     } finally {
       setLoading(false);
@@ -126,8 +207,8 @@ export default function LoginScreen() {
           </div>
 
           <div className={styles.socialButtons}>
-            <button 
-              className={`${styles.socialButton} ${styles.google}`} 
+            <button
+              className={`${styles.socialButton} ${styles.google}`}
               onClick={handleGoogleLogin}
               disabled={googleLoading}
             >
@@ -148,18 +229,32 @@ export default function LoginScreen() {
 
           <form onSubmit={handleEmailAuth} className={styles.form}>
             {!isLogin && (
-              <div className={styles.inputGroup}>
-                <FaUser className={styles.inputIcon} />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Full Name"
-                  className={styles.input}
-                  required
-                />
-              </div>
+              <>
+                <div className={styles.inputGroup}>
+                  <FaUser className={styles.inputIcon} />
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="First Name"
+                    className={styles.input}
+                    required
+                  />
+                </div>
+                <div className={styles.inputGroup}>
+                  <FaUser className={styles.inputIcon} />
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Last Name"
+                    className={styles.input}
+                    required
+                  />
+                </div>
+              </>
             )}
+
             <div className={styles.inputGroup}>
               <FaEnvelope className={styles.inputIcon} />
               <input
@@ -171,6 +266,7 @@ export default function LoginScreen() {
                 required
               />
             </div>
+
             <div className={styles.inputGroup}>
               <FaLock className={styles.inputIcon} />
               <input
@@ -182,8 +278,8 @@ export default function LoginScreen() {
                 required
                 minLength="6"
               />
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className={styles.passwordToggle}
                 onClick={togglePasswordVisibility}
               >
@@ -199,8 +295,8 @@ export default function LoginScreen() {
 
             {errorMessage && <p className={styles.error}>{errorMessage}</p>}
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className={styles.submitButton}
               disabled={loading || (!isLogin && password.length < 6)}
             >

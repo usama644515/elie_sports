@@ -1,8 +1,9 @@
 // lib/firebase.js
 
-import { initializeApp } from "firebase/app"; // Import to initialize app
-import { getAuth } from "firebase/auth"; // Import auth from the modular SDK
-import { getFirestore } from "firebase/firestore"; // Import Firestore from modular SDK
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage"; // Add this import
 
 const firebaseConfig = {
   apiKey: "AIzaSyBwLKLpD87S1UE1nbouznA9jf_iDOKjKe8",
@@ -14,13 +15,13 @@ const firebaseConfig = {
   measurementId: "G-34TZSGKG0Q",
 };
 
-// Initialize Firebase App (make sure it's initialized only once)
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Export Firestore database
+// Get services
 const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app); // Initialize storage service
 
-// Export Firebase authentication
-const auth = getAuth(app); // Use the modular getAuth method to get auth instance
-
-export { db, auth };
+// Export services
+export { db, auth, storage }; // Add storage to exports
